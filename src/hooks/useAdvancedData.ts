@@ -129,6 +129,16 @@ export function useProjects() {
     }
   };
 
+  const deleteProject = async (id: string) => {
+    try {
+      await ProjectService.delete(id);
+      setProjects(prev => prev.filter(project => project.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete project');
+      throw err;
+    }
+  };
+
   const updateProgress = async (id: string, actualHours: number) => {
     return updateProject(id, { actual_hours: actualHours });
   };
@@ -140,6 +150,7 @@ export function useProjects() {
     addProject,
     updateProject,
     updateProgress,
+    deleteProject,
     refetch: fetchProjects
   };
 }

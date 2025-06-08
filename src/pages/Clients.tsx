@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { Plus, Search, Building, User, Mail, Phone, Filter, Users } from 'lucide-react';
+import { Plus, Search, Building, User, Mail, Phone, Filter, Users, Edit, Trash2 } from 'lucide-react';
 import { useClients } from '../hooks/useSupabase';
 import { Client } from '../types/database';
+import ClientModal from '../components/forms/ClientModal';
 
 const Clients: React.FC = () => {
-  const { clients, loading } = useClients();
+  const { clients, loading, addClient, updateClient, deleteClient } = useClients();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
 
   const filteredClients = clients.filter(client => {
     const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -29,6 +32,30 @@ const Clients: React.FC = () => {
         return 'bg-gray-100 text-gray-800';
       default:
         return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleAddClient = () => {
+    setEditingClient(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEditClient = (client: Client) => {
+    setEditingClient(client);
+    setIsModalOpen(true);
+  };
+
+  const handleSubmitClient = async (clientData: Omit<Client, 'id' | 'created_at' | 'updated_at'>) => {
+    if (editingClient) {
+      await updateClient(editingClient.id, clientData);
+    } else {
+      await addClient(clientData);
+    }
+  };
+
+  const handleDeleteClient = async (clientId: string) => {
+    if (window.confirm('Are you sure you want to delete this client? This action cannot be undone.')) {
+      await deleteClient(clientId);
     }
   };
 
@@ -55,7 +82,10 @@ const Clients: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">Clients</h1>
           <p className="text-gray-600 mt-2">Manage your client relationships and contacts</p>
         </div>
-        <button className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+        <button 
+          onClick={handleAddClient}
+          className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+        >
           <Plus className="w-4 h-4" />
           <span>Add Client</span>
         </button>
@@ -168,11 +198,19 @@ const Clients: React.FC = () => {
                 </div>
                 
                 <div className="flex items-center space-x-2">
-                  <button className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                    Edit
+                  <button 
+                    onClick={() => handleEditClient(client)}
+                    className="flex items-center space-x-1 px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  >
+                    <Edit className="w-4 h-4" />
+                    <span>Edit</span>
                   </button>
-                  <button className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
-                    View Projects
+                  <button 
+                    onClick={() => handleDeleteClient(client.id)}
+                    className="flex items-center space-x-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete</span>
                   </button>
                 </div>
               </div>
@@ -193,6 +231,14 @@ const Clients: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Client Modal */}
+      <ClientModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmitClient}
+        client={editingClient}
+      />
     </div>
   );
 };

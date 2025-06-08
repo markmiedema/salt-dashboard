@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { Plus, Search, Clock, CheckCircle, AlertCircle, Pause, Filter } from 'lucide-react';
+import { Plus, Search, Clock, CheckCircle, AlertCircle, Pause, Filter, Edit, Trash2 } from 'lucide-react';
 import { useProjects, useClients } from '../hooks/useSupabase';
 import { Project } from '../types/database';
+import ProjectModal from '../components/forms/ProjectModal';
 
 const Projects: React.FC = () => {
-  const { projects, loading: projectsLoading } = useProjects();
+  const { projects, loading: projectsLoading, addProject, updateProject, deleteProject } = useProjects();
   const { clients, loading: clientsLoading } = useClients();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
 
   const loading = projectsLoading || clientsLoading;
 
@@ -60,6 +63,30 @@ const Projects: React.FC = () => {
     return diffDays;
   };
 
+  const handleAddProject = () => {
+    setEditingProject(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEditProject = (project: Project) => {
+    setEditingProject(project);
+    setIsModalOpen(true);
+  };
+
+  const handleSubmitProject = async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => {
+    if (editingProject) {
+      await updateProject(editingProject.id, projectData);
+    } else {
+      await addProject(projectData);
+    }
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    if (window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+      await deleteProject(projectId);
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -83,7 +110,10 @@ const Projects: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">Projects</h1>
           <p className="text-gray-600 mt-2">Track and manage your client projects</p>
         </div>
-        <button className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+        <button 
+          onClick={handleAddProject}
+          className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+        >
           <Plus className="w-4 h-4" />
           <span>New Project</span>
         </button>
@@ -224,11 +254,19 @@ const Projects: React.FC = () => {
                       <Icon className={`w-5 h-5 text-${statusInfo.color}-600`} />
                     </div>
                     <div className="flex flex-col space-y-2">
-                      <button className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                        Edit
+                      <button 
+                        onClick={() => handleEditProject(project)}
+                        className="flex items-center space-x-1 px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      >
+                        <Edit className="w-4 h-4" />
+                        <span>Edit</span>
                       </button>
-                      <button className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
-                        Details
+                      <button 
+                        onClick={() => handleDeleteProject(project.id)}
+                        className="flex items-center space-x-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span>Delete</span>
                       </button>
                     </div>
                   </div>
@@ -251,6 +289,15 @@ const Projects: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Project Modal */}
+      <ProjectModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmitProject}
+        project={editingProject}
+        clients={clients}
+      />
     </div>
   );
 };
