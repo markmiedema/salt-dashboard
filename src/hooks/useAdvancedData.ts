@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
-import { ClientService, ClientStats } from '../services/clientService';
-import { ProjectService, ProjectStats } from '../services/projectService';
+import { useState, useEffect, useCallback } from 'react';
+import { ClientService, ClientStats, ClientFilters, PaginatedResponse } from '../services/clientService';
+import { ProjectService, ProjectStats, ProjectFilters } from '../services/projectService';
 import { RevenueService, RevenueStats, MonthlyRevenue, RevenueByType } from '../services/revenueService';
 import { Client, Project, RevenueEntry } from '../types/database';
 import { MockDataService } from '../services/supabase';
+import { useDebounce } from './useDebounce';
+import { usePagination } from './usePagination';
 
 interface UseDataResult<T> {
   data: T;
@@ -12,34 +14,75 @@ interface UseDataResult<T> {
   refetch: () => Promise<void>;
 }
 
-export function useClients() {
+interface UsePaginatedDataResult<T> {
+  data: T[];
+  loading: boolean;
+  error: string | null;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  refetch: () => Promise<void>;
+  goToPage: (page: number) => void;
+  nextPage: () => void;
+  prevPage: () => void;
+  setLimit: (limit: number) => void;
+}
+
+export function useClients(filters?: Omit<ClientFilters, 'page' | 'limit'>) {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { pagination, goToPage, nextPage, prevPage, setLimit, setTotal } = usePagination(20);
 
-  const fetchClients = async () => {
+  // Debounce search term to avoid excessive API calls
+  const debouncedSearch = useDebounce(filters?.search || '', 300);
+
+  const fetchClients = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await ClientService.getAll();
-      setClients(data);
+      
+      const result = await ClientService.getAll({
+        ...filters,
+        search: debouncedSearch,
+        page: pagination.page,
+        limit: pagination.limit
+      });
+      
+      setClients(result.data);
+      setTotal(result.total);
     } catch (err) {
       console.log('Using mock client data - Supabase error:', err);
-      setClients(MockDataService.mockClients);
-      setError(null); // Don't show error for mock data fallback
+      // Fallback to mock data with simulated pagination
+      const mockData = MockDataService.mockClients;
+      const filteredData = mockData.filter(client => {
+        if (filters?.status && client.status !== filters.status) return false;
+        if (filters?.entityType && client.entity_type !== filters.entityType) return false;
+        if (debouncedSearch && !client.name.toLowerCase().includes(debouncedSearch.toLowerCase())) return false;
+        return true;
+      });
+      
+      const startIndex = (pagination.page - 1) * pagination.limit;
+      const endIndex = startIndex + pagination.limit;
+      setClients(filteredData.slice(startIndex, endIndex));
+      setTotal(filteredData.length);
+      setError(null);
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, debouncedSearch, pagination.page, pagination.limit, setTotal]);
 
   useEffect(() => {
     fetchClients();
-  }, []);
+  }, [fetchClients]);
 
   const addClient = async (client: Omit<Client, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       const newClient = await ClientService.create(client);
-      setClients(prev => [newClient, ...prev]);
+      await fetchClients(); // Refresh the list
       return newClient;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add client');
@@ -50,9 +93,7 @@ export function useClients() {
   const updateClient = async (id: string, updates: Partial<Client>) => {
     try {
       const updatedClient = await ClientService.update(id, updates);
-      setClients(prev => prev.map(client => 
-        client.id === id ? updatedClient : client
-      ));
+      await fetchClients(); // Refresh the list
       return updatedClient;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update client');
@@ -63,7 +104,7 @@ export function useClients() {
   const deleteClient = async (id: string) => {
     try {
       await ClientService.delete(id);
-      setClients(prev => prev.filter(client => client.id !== id));
+      await fetchClients(); // Refresh the list
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete client');
       throw err;
@@ -74,41 +115,71 @@ export function useClients() {
     clients,
     loading,
     error,
+    pagination,
     addClient,
     updateClient,
     deleteClient,
-    refetch: fetchClients
+    refetch: fetchClients,
+    goToPage,
+    nextPage,
+    prevPage,
+    setLimit
   };
 }
 
-export function useProjects() {
+export function useProjects(filters?: Omit<ProjectFilters, 'page' | 'limit'>) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { pagination, goToPage, nextPage, prevPage, setLimit, setTotal } = usePagination(20);
 
-  const fetchProjects = async () => {
+  // Debounce search term
+  const debouncedSearch = useDebounce(filters?.search || '', 300);
+
+  const fetchProjects = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await ProjectService.getAll();
-      setProjects(data);
+      
+      const result = await ProjectService.getAll({
+        ...filters,
+        search: debouncedSearch,
+        page: pagination.page,
+        limit: pagination.limit
+      });
+      
+      setProjects(result.data);
+      setTotal(result.total);
     } catch (err) {
       console.log('Using mock project data - Supabase error:', err);
-      setProjects(MockDataService.mockProjects);
+      // Fallback to mock data with simulated pagination
+      const mockData = MockDataService.mockProjects;
+      const filteredData = mockData.filter(project => {
+        if (filters?.status && project.status !== filters.status) return false;
+        if (filters?.type && project.type !== filters.type) return false;
+        if (filters?.clientId && project.client_id !== filters.clientId) return false;
+        if (debouncedSearch && !project.name.toLowerCase().includes(debouncedSearch.toLowerCase())) return false;
+        return true;
+      });
+      
+      const startIndex = (pagination.page - 1) * pagination.limit;
+      const endIndex = startIndex + pagination.limit;
+      setProjects(filteredData.slice(startIndex, endIndex));
+      setTotal(filteredData.length);
       setError(null);
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, debouncedSearch, pagination.page, pagination.limit, setTotal]);
 
   useEffect(() => {
     fetchProjects();
-  }, []);
+  }, [fetchProjects]);
 
   const addProject = async (project: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       const newProject = await ProjectService.create(project);
-      setProjects(prev => [newProject, ...prev]);
+      await fetchProjects(); // Refresh the list
       return newProject;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add project');
@@ -119,9 +190,7 @@ export function useProjects() {
   const updateProject = async (id: string, updates: Partial<Project>) => {
     try {
       const updatedProject = await ProjectService.update(id, updates);
-      setProjects(prev => prev.map(project => 
-        project.id === id ? updatedProject : project
-      ));
+      await fetchProjects(); // Refresh the list
       return updatedProject;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update project');
@@ -132,7 +201,7 @@ export function useProjects() {
   const deleteProject = async (id: string) => {
     try {
       await ProjectService.delete(id);
-      setProjects(prev => prev.filter(project => project.id !== id));
+      await fetchProjects(); // Refresh the list
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete project');
       throw err;
@@ -147,11 +216,16 @@ export function useProjects() {
     projects,
     loading,
     error,
+    pagination,
     addProject,
     updateProject,
     updateProgress,
     deleteProject,
-    refetch: fetchProjects
+    refetch: fetchProjects,
+    goToPage,
+    nextPage,
+    prevPage,
+    setLimit
   };
 }
 

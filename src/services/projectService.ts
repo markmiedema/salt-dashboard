@@ -20,15 +20,31 @@ export interface ProjectFilters {
   clientId?: string;
   search?: string;
   overdue?: boolean;
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export class ProjectService {
-  static async getAll(filters?: ProjectFilters): Promise<Project[]> {
+  static async getAll(filters?: ProjectFilters): Promise<PaginatedResponse<Project>> {
+    const page = filters?.page || 1;
+    const limit = filters?.limit || 20;
+    const offset = (page - 1) * limit;
+
+    // Build the query with filters
     let query = supabase
       .from('projects')
-      .select('*')
+      .select('*', { count: 'exact' })
       .order('created_at', { ascending: false });
 
+    // Apply filters
     if (filters?.status) {
       query = query.eq('status', filters.status);
     }
@@ -41,30 +57,38 @@ export class ProjectService {
       query = query.eq('client_id', filters.clientId);
     }
 
-    if (filters?.search) {
-      query = query.ilike('name', `%${filters.search}%`);
+    if (filters?.search && filters.search.trim()) {
+      query = query.ilike('name', `%${filters.search.trim()}%`);
     }
 
-    const { data, error } = await query;
+    // Handle overdue filter (projects past due date and not completed)
+    if (filters?.overdue) {
+      const today = new Date().toISOString().split('T')[0];
+      query = query
+        .lt('due_date', today)
+        .neq('status', 'completed');
+    }
+
+    // Apply pagination
+    query = query.range(offset, offset + limit - 1);
+
+    const { data, error, count } = await query;
     
     if (error) {
       console.error('Error fetching projects:', error);
       throw new Error(`Failed to fetch projects: ${error.message}`);
     }
 
-    let projects = data || [];
+    const total = count || 0;
+    const totalPages = Math.ceil(total / limit);
 
-    // Filter overdue projects if requested
-    if (filters?.overdue) {
-      const today = new Date();
-      projects = projects.filter(p => 
-        p.due_date && 
-        new Date(p.due_date) < today && 
-        p.status !== 'completed'
-      );
-    }
-
-    return projects;
+    return {
+      data: data || [],
+      total,
+      page,
+      limit,
+      totalPages
+    };
   }
 
   static async getById(id: string): Promise<Project | null> {
@@ -135,33 +159,50 @@ export class ProjectService {
   }
 
   static async getStats(): Promise<ProjectStats> {
-    const projects = await this.getAll();
-    const today = new Date();
+    // Get counts using database aggregation
+    const [totalResult, pendingResult, inProgressResult, completedResult, onHoldResult] = await Promise.all([
+      supabase.from('projects').select('*', { count: 'exact', head: true }),
+      supabase.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+      supabase.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'in_progress'),
+      supabase.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
+      supabase.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'on_hold')
+    ]);
 
-    const overdue = projects.filter(p => 
-      p.due_date && 
-      new Date(p.due_date) < today && 
-      p.status !== 'completed'
-    ).length;
+    // Get overdue projects count
+    const today = new Date().toISOString().split('T')[0];
+    const { count: overdueCount } = await supabase
+      .from('projects')
+      .select('*', { count: 'exact', head: true })
+      .lt('due_date', today)
+      .neq('status', 'completed');
 
-    const projectsWithValue = projects.filter(p => p.amount && p.amount > 0);
-    const totalValue = projectsWithValue.reduce((sum, p) => sum + (p.amount || 0), 0);
-    const averageValue = projectsWithValue.length > 0 ? totalValue / projectsWithValue.length : 0;
+    // Get aggregated values for projects with amounts
+    const { data: projectsWithValues } = await supabase
+      .from('projects')
+      .select('amount, actual_hours')
+      .not('amount', 'is', null);
 
-    const projectsWithHours = projects.filter(p => p.actual_hours > 0);
-    const totalHours = projectsWithHours.reduce((sum, p) => sum + p.actual_hours, 0);
-    const averageHours = projectsWithHours.length > 0 ? totalHours / projectsWithHours.length : 0;
+    const totalValue = projectsWithValues?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+    const averageValue = projectsWithValues && projectsWithValues.length > 0 
+      ? totalValue / projectsWithValues.length 
+      : 0;
 
-    const completed = projects.filter(p => p.status === 'completed').length;
-    const completionRate = projects.length > 0 ? (completed / projects.length) * 100 : 0;
+    const totalHours = projectsWithValues?.reduce((sum, p) => sum + p.actual_hours, 0) || 0;
+    const averageHours = projectsWithValues && projectsWithValues.length > 0 
+      ? totalHours / projectsWithValues.length 
+      : 0;
+
+    const total = totalResult.count || 0;
+    const completed = completedResult.count || 0;
+    const completionRate = total > 0 ? (completed / total) * 100 : 0;
 
     return {
-      total: projects.length,
-      pending: projects.filter(p => p.status === 'pending').length,
-      inProgress: projects.filter(p => p.status === 'in_progress').length,
+      total,
+      pending: pendingResult.count || 0,
+      inProgress: inProgressResult.count || 0,
       completed,
-      onHold: projects.filter(p => p.status === 'on_hold').length,
-      overdue,
+      onHold: onHoldResult.count || 0,
+      overdue: overdueCount || 0,
       totalValue,
       averageValue,
       completionRate,
@@ -187,11 +228,30 @@ export class ProjectService {
     return 'low';
   }
 
-  static async getOverdueProjects(): Promise<Project[]> {
-    return this.getAll({ overdue: true });
+  static async getOverdueProjects(limit?: number): Promise<Project[]> {
+    const result = await this.getAll({ overdue: true, limit });
+    return result.data;
   }
 
-  static async getProjectsByClient(clientId: string): Promise<Project[]> {
-    return this.getAll({ clientId });
+  static async getProjectsByClient(clientId: string, limit?: number): Promise<Project[]> {
+    const result = await this.getAll({ clientId, limit });
+    return result.data;
+  }
+
+  static async searchProjects(searchTerm: string, limit: number = 10): Promise<Project[]> {
+    if (!searchTerm.trim()) return [];
+
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .ilike('name', `%${searchTerm.trim()}%`)
+      .order('name')
+      .limit(limit);
+
+    if (error) {
+      throw new Error(`Failed to search projects: ${error.message}`);
+    }
+
+    return data || [];
   }
 }

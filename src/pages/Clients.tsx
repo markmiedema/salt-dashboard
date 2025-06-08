@@ -1,26 +1,36 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Plus, Search, Building, User, Mail, Phone, Filter, Users, Edit, Trash2 } from 'lucide-react';
-import { useClients } from '../hooks/useSupabase';
+import { useClients } from '../hooks/useAdvancedData';
 import { Client } from '../types/database';
 import ClientModal from '../components/forms/ClientModal';
+import Pagination from '../components/common/Pagination';
+import PageSizeSelector from '../components/common/PageSizeSelector';
 
 const Clients: React.FC = () => {
-  const { clients, loading, addClient, updateClient, deleteClient } = useClients();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
 
-  const filteredClients = clients.filter(client => {
-    const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (client.email?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                         false;
-    const matchesStatus = statusFilter === 'all' || client.status === statusFilter;
-    const matchesType = typeFilter === 'all' || client.entity_type === typeFilter;
-    
-    return matchesSearch && matchesStatus && matchesType;
+  // Use the enhanced hook with server-side filtering and pagination
+  const {
+    clients,
+    loading,
+    error,
+    pagination,
+    addClient,
+    updateClient,
+    deleteClient,
+    goToPage,
+    nextPage,
+    prevPage,
+    setLimit
+  } = useClients({
+    search: searchTerm,
+    status: statusFilter === 'all' ? undefined : statusFilter as Client['status'],
+    entityType: typeFilter === 'all' ? undefined : typeFilter as Client['entity_type']
   });
 
   const getStatusColor = (status: Client['status']) => {
@@ -60,7 +70,7 @@ const Clients: React.FC = () => {
     }
   };
 
-  if (loading) {
+  if (loading && pagination.page === 1) {
     return (
       <>
         <Helmet>
@@ -151,16 +161,29 @@ const Clients: React.FC = () => {
           </div>
         </div>
 
+        {/* Results Summary and Page Size */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm text-gray-600">
+            Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} clients
+          </div>
+          <PageSizeSelector
+            pageSize={pagination.limit}
+            onPageSizeChange={setLimit}
+            options={[10, 20, 50, 100]}
+          />
+        </div>
+
         {/* Clients List */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">
-              {filteredClients.length} Client{filteredClients.length !== 1 ? 's' : ''}
+              {pagination.total} Client{pagination.total !== 1 ? 's' : ''}
+              {loading && <span className="ml-2 text-sm text-gray-500">(Loading...)</span>}
             </h2>
           </div>
           
           <div className="divide-y divide-gray-200">
-            {filteredClients.map((client) => (
+            {clients.map((client) => (
               <div key={client.id} className="p-6 hover:bg-gray-50 transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-4">
@@ -231,7 +254,7 @@ const Clients: React.FC = () => {
             ))}
           </div>
 
-          {filteredClients.length === 0 && (
+          {clients.length === 0 && !loading && (
             <div className="text-center py-12">
               <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p className="text-gray-500 mb-2">No clients found</p>
@@ -243,7 +266,25 @@ const Clients: React.FC = () => {
               </p>
             </div>
           )}
+
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <div className="p-6 border-t border-gray-200">
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                onPageChange={goToPage}
+              />
+            </div>
+          )}
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
 
         {/* Client Modal */}
         <ClientModal
