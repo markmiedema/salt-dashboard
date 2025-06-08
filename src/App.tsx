@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/common/Header';
 import EnhancedDashboard from './pages/EnhancedDashboard';
 import Clients from './pages/Clients';
@@ -8,8 +9,7 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import { TeamsService } from './services/teamsService';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('dashboard');
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isInitialized, setIsInitialized] = React.useState(false);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -25,19 +25,6 @@ function App() {
     initializeApp();
   }, []);
 
-  const renderCurrentPage = () => {
-    switch (currentPage) {
-      case 'clients':
-        return <Clients />;
-      case 'projects':
-        return <Projects />;
-      case 'reports':
-        return <Reports />;
-      default:
-        return <EnhancedDashboard />;
-    }
-  };
-
   if (!isInitialized) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -51,12 +38,22 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50">
-        <Header currentPage={currentPage} onNavigate={setCurrentPage} />
-        <main>
-          {renderCurrentPage()}
-        </main>
-      </div>
+      <Router>
+        <div className="min-h-screen bg-gray-50">
+          <Header />
+          <main>
+            <Routes>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<EnhancedDashboard />} />
+              <Route path="/clients" element={<Clients />} />
+              <Route path="/projects" element={<Projects />} />
+              <Route path="/reports" element={<Reports />} />
+              {/* Catch-all route for 404s */}
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </main>
+        </div>
+      </Router>
     </ErrorBoundary>
   );
 }
