@@ -132,43 +132,40 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
     }
   };
 
-  const getTypeLabel = (type: Project['type']) => {
-    const labels = {
-      'nexus_analysis': 'Nexus Analysis',
-      'vda': 'VDA',
-      'tax_prep': 'Tax Preparation',
-      'bookkeeping': 'Bookkeeping',
-      'advisory': 'Advisory'
-    };
-    return labels[type];
+  const handleClose = () => {
+    if (!isSubmitting) {
+      onClose();
+    }
   };
 
-  const getStatusLabel = (status: Project['status']) => {
-    const labels = {
-      'pending': 'Pending',
-      'in_progress': 'In Progress',
-      'completed': 'Completed',
-      'on_hold': 'On Hold'
-    };
-    return labels[status];
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape' && !isSubmitting) {
+      handleClose();
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onKeyDown={handleKeyDown}
+      tabIndex={-1}
+    >
       <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">
             {title || (project ? 'Edit Project' : 'Add New Project')}
           </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
+          {!isSubmitting && (
+            <button
+              onClick={handleClose}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          )}
         </div>
 
         {/* Form */}
@@ -187,6 +184,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                 className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.client_id ? 'border-red-300' : 'border-gray-300'
                 }`}
+                disabled={isSubmitting}
               >
                 <option value="">Select a client</option>
                 {clients.map((client) => (
@@ -215,6 +213,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                   errors.name ? 'border-red-300' : 'border-gray-300'
                 }`}
                 placeholder="Enter project name"
+                disabled={isSubmitting}
               />
             </div>
             {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
@@ -231,6 +230,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                 value={formData.type}
                 onChange={(e) => handleInputChange('type', e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isSubmitting}
               >
                 <option value="nexus_analysis">Nexus Analysis</option>
                 <option value="vda">VDA</option>
@@ -249,6 +249,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                 value={formData.status}
                 onChange={(e) => handleInputChange('status', e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isSubmitting}
               >
                 <option value="pending">Pending</option>
                 <option value="in_progress">In Progress</option>
@@ -277,6 +278,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                   placeholder="0.00"
                   min="0"
                   step="0.01"
+                  disabled={isSubmitting}
                 />
               </div>
               {errors.amount && <p className="mt-1 text-sm text-red-600">{errors.amount}</p>}
@@ -296,6 +298,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                   className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                     errors.due_date ? 'border-red-300' : 'border-gray-300'
                   }`}
+                  disabled={isSubmitting}
                 />
               </div>
               {errors.due_date && <p className="mt-1 text-sm text-red-600">{errors.due_date}</p>}
@@ -321,6 +324,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                   placeholder="0"
                   min="0"
                   step="0.25"
+                  disabled={isSubmitting}
                 />
               </div>
               {errors.estimated_hours && <p className="mt-1 text-sm text-red-600">{errors.estimated_hours}</p>}
@@ -343,6 +347,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                   placeholder="0"
                   min="0"
                   step="0.25"
+                  disabled={isSubmitting}
                 />
               </div>
               {errors.actual_hours && <p className="mt-1 text-sm text-red-600">{errors.actual_hours}</p>}
@@ -363,6 +368,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                 rows={3}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 placeholder="Additional notes about this project..."
+                disabled={isSubmitting}
               />
             </div>
           </div>
@@ -378,8 +384,9 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
           <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
               type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              onClick={handleClose}
+              disabled={isSubmitting}
+              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>

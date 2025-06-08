@@ -4,6 +4,8 @@ import { Plus, Search, Building, User, Mail, Phone, Filter, Users, Edit, Trash2 
 import { useClients } from '../hooks/useSupabase';
 import { Client } from '../types/database';
 import ClientModal from '../components/forms/ClientModal';
+import ConfirmationModal from '../components/common/ConfirmationModal';
+import { useConfirmation } from '../hooks/useConfirmation';
 
 const Clients: React.FC = () => {
   const { clients, loading, addClient, updateClient, deleteClient } = useClients();
@@ -12,6 +14,7 @@ const Clients: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const { confirmationState, showConfirmation, hideConfirmation } = useConfirmation();
 
   const filteredClients = clients.filter(client => {
     const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -54,10 +57,20 @@ const Clients: React.FC = () => {
     }
   };
 
-  const handleDeleteClient = async (clientId: string) => {
-    if (window.confirm('Are you sure you want to delete this client? This action cannot be undone.')) {
-      await deleteClient(clientId);
-    }
+  const handleDeleteClient = (client: Client) => {
+    showConfirmation(
+      {
+        title: 'Delete Client',
+        message: 'Are you sure you want to delete this client? This action will permanently remove the client and all associated data.',
+        confirmText: 'Delete Client',
+        cancelText: 'Cancel',
+        type: 'danger',
+        itemName: client.name
+      },
+      async () => {
+        await deleteClient(client.id);
+      }
+    );
   };
 
   if (loading) {
@@ -219,7 +232,7 @@ const Clients: React.FC = () => {
                       <span>Edit</span>
                     </button>
                     <button 
-                      onClick={() => handleDeleteClient(client.id)}
+                      onClick={() => handleDeleteClient(client)}
                       className="flex items-center space-x-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -251,6 +264,20 @@ const Clients: React.FC = () => {
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleSubmitClient}
           client={editingClient}
+        />
+
+        {/* Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={confirmationState.isOpen}
+          onClose={hideConfirmation}
+          onConfirm={confirmationState.onConfirm}
+          title={confirmationState.title}
+          message={confirmationState.message}
+          confirmText={confirmationState.confirmText}
+          cancelText={confirmationState.cancelText}
+          type={confirmationState.type}
+          isLoading={confirmationState.isLoading}
+          itemName={confirmationState.itemName}
         />
       </div>
     </>

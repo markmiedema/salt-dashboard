@@ -4,6 +4,8 @@ import { Plus, Search, Clock, CheckCircle, AlertCircle, Pause, Filter, Edit, Tra
 import { useProjects, useClients } from '../hooks/useSupabase';
 import { Project } from '../types/database';
 import ProjectModal from '../components/forms/ProjectModal';
+import ConfirmationModal from '../components/common/ConfirmationModal';
+import { useConfirmation } from '../hooks/useConfirmation';
 
 const Projects: React.FC = () => {
   const { projects, loading: projectsLoading, addProject, updateProject, deleteProject } = useProjects();
@@ -13,6 +15,7 @@ const Projects: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const { confirmationState, showConfirmation, hideConfirmation } = useConfirmation();
 
   const loading = projectsLoading || clientsLoading;
 
@@ -82,10 +85,22 @@ const Projects: React.FC = () => {
     }
   };
 
-  const handleDeleteProject = async (projectId: string) => {
-    if (window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
-      await deleteProject(projectId);
-    }
+  const handleDeleteProject = (project: Project) => {
+    const clientName = getClientName(project.client_id);
+    
+    showConfirmation(
+      {
+        title: 'Delete Project',
+        message: 'Are you sure you want to delete this project? This action will permanently remove the project and all associated data, including time tracking and revenue records.',
+        confirmText: 'Delete Project',
+        cancelText: 'Cancel',
+        type: 'danger',
+        itemName: `${project.name} (${clientName})`
+      },
+      async () => {
+        await deleteProject(project.id);
+      }
+    );
   };
 
   if (loading) {
@@ -275,7 +290,7 @@ const Projects: React.FC = () => {
                           <span>Edit</span>
                         </button>
                         <button 
-                          onClick={() => handleDeleteProject(project.id)}
+                          onClick={() => handleDeleteProject(project)}
                           className="flex items-center space-x-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -310,6 +325,20 @@ const Projects: React.FC = () => {
           onSubmit={handleSubmitProject}
           project={editingProject}
           clients={clients}
+        />
+
+        {/* Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={confirmationState.isOpen}
+          onClose={hideConfirmation}
+          onConfirm={confirmationState.onConfirm}
+          title={confirmationState.title}
+          message={confirmationState.message}
+          confirmText={confirmationState.confirmText}
+          cancelText={confirmationState.cancelText}
+          type={confirmationState.type}
+          isLoading={confirmationState.isLoading}
+          itemName={confirmationState.itemName}
         />
       </div>
     </>
