@@ -1,30 +1,14 @@
 import React from 'react';
 import { Users, Building, User, Eye, TrendingUp, AlertCircle } from 'lucide-react';
-import { useEnhancedClients, useEnhancedClientStats } from '../../hooks/useAdvancedData';
-import CacheStatus from '../../common/CacheStatus';
+import { useClients, useClientStats } from '../../hooks/useAdvancedData';
 
 const EnhancedClientOverview: React.FC = () => {
-  const { 
-    clients, 
-    loading: clientsLoading, 
-    error: clientsError, 
-    isStale: clientsStale, 
-    refresh: refreshClients 
-  } = useEnhancedClients();
-  
-  const { 
-    data: stats, 
-    loading: statsLoading, 
-    error: statsError, 
-    isStale: statsStale, 
-    refresh: refreshStats 
-  } = useEnhancedClientStats();
+  const { clients, loading: clientsLoading } = useClients();
+  const { data: stats, loading: statsLoading } = useClientStats();
 
   const loading = clientsLoading || statsLoading;
-  const hasError = clientsError || statsError;
-  const isStale = clientsStale || statsStale;
 
-  if (loading && !clients.length && !stats) {
+  if (loading) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="animate-pulse space-y-4">
@@ -44,46 +28,34 @@ const EnhancedClientOverview: React.FC = () => {
     );
   }
 
-  // Use fallback data if no stats available
-  const safeStats = stats || {
-    total: clients.length,
-    active: clients.filter(c => c.status === 'active').length,
-    prospects: clients.filter(c => c.status === 'prospect').length,
-    inactive: clients.filter(c => c.status === 'inactive').length,
-    businessClients: clients.filter(c => c.entity_type === 'business').length,
-    individualClients: clients.filter(c => c.entity_type === 'individual').length,
-    recentlyAdded: 0,
-    conversionRate: 0
-  };
-
   const statCards = [
     { 
       label: 'Total Clients', 
-      value: safeStats.total, 
+      value: stats.total, 
       icon: Users, 
       color: 'blue',
-      change: `+${safeStats.recentlyAdded} this month`
+      change: `+${stats.recentlyAdded} this month`
     },
     { 
       label: 'Active Clients', 
-      value: safeStats.active, 
+      value: stats.active, 
       icon: Eye, 
       color: 'emerald',
-      change: `${((safeStats.active / safeStats.total) * 100).toFixed(0)}% of total`
+      change: `${((stats.active / stats.total) * 100).toFixed(0)}% of total`
     },
     { 
       label: 'Prospects', 
-      value: safeStats.prospects, 
+      value: stats.prospects, 
       icon: TrendingUp, 
       color: 'purple',
-      change: `${safeStats.conversionRate.toFixed(0)}% conversion rate`
+      change: `${stats.conversionRate.toFixed(0)}% conversion rate`
     },
     { 
       label: 'Businesses', 
-      value: safeStats.businessClients, 
+      value: stats.businessClients, 
       icon: Building, 
       color: 'orange',
-      change: `${safeStats.individualClients} individuals`
+      change: `${stats.individualClients} individuals`
     }
   ];
 
@@ -113,32 +85,18 @@ const EnhancedClientOverview: React.FC = () => {
 
   const priorityClients = getPriorityClients();
 
-  const handleRefresh = () => {
-    refreshClients();
-    refreshStats();
-  };
-
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Client Overview</h3>
-          <div className="flex items-center space-x-4 mt-1">
-            <p className="text-sm text-gray-600">
-              {safeStats.conversionRate > 0 && (
-                <span className="text-emerald-600 font-medium">
-                  {safeStats.conversionRate.toFixed(1)}% conversion rate
-                </span>
-              )}
-            </p>
-            <CacheStatus
-              isStale={isStale}
-              loading={loading}
-              error={hasError}
-              onRefresh={handleRefresh}
-              className="text-xs"
-            />
-          </div>
+          <p className="text-sm text-gray-600 mt-1">
+            {stats.conversionRate > 0 && (
+              <span className="text-emerald-600 font-medium">
+                {stats.conversionRate.toFixed(1)}% conversion rate
+              </span>
+            )}
+          </p>
         </div>
       </div>
       
@@ -213,7 +171,7 @@ const EnhancedClientOverview: React.FC = () => {
       <div className="mt-6 pt-4 border-t border-gray-200">
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600">
-            <span className="font-medium">{safeStats.active}</span> active clients generating revenue
+            <span className="font-medium">{stats.active}</span> active clients generating revenue
           </div>
           <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
             View All Clients →
