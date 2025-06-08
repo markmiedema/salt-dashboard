@@ -1,0 +1,37 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.16",
+  "version": "1.0.0",
+  "id": "$(TEAMS_APP_ID)",
+  "packageName": "com.taxagency.dashboard",
+  "developer": {
+    "name": "Tax Agency Solutions",
+    "websiteUrl": "https://localhost:3000",
+    "privacyUrl": "https://localhost:3000/privacy",
+    "termsOfUseUrl": "https://localhost:3000/terms"
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "name": {
+    "short": "Tax Dashboard",
+    "full": "Tax Agency Revenue Dashboard"
+  },
+  "description": {
+    "short": "Revenue and client tracking for tax agencies",
+    "full": "Comprehensive dashboard for tracking tax agency revenue streams, client status, and project pipeline with real-time insights and Microsoft Teams integration."
+  },
+  "accentColor": "#FFFFFF",
+  "staticTabs": [
+    {
+      "entityId": "dashboard",
+      "name": "Dashboard",
+      "contentUrl": "https://localhost:3000",
+      "websiteUrl": "https://localhost:3000",
+      "scopes": ["personal"]
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": ["localhost:3000", "*.vercel.app", "*.netlify.app"]
+}
