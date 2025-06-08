@@ -6,6 +6,7 @@ import Clients from './pages/Clients';
 import Projects from './pages/Projects';
 import Reports from './pages/Reports';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import { ToastProvider } from './contexts/ToastContext';
 import { TeamsService } from './services/teamsService';
 
 function App() {
@@ -38,22 +39,24 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          <Header />
-          <main>
-            <Routes>
-              <Route path="/" element={<Navigate to="/dashboard\" replace />} />
-              <Route path="/dashboard" element={<EnhancedDashboard />} />
-              <Route path="/clients" element={<Clients />} />
-              <Route path="/projects" element={<Projects />} />
-              <Route path="/reports" element={<Reports />} />
-              {/* Catch-all route for 404s */}
-              <Route path="*" element={<Navigate to="/dashboard\" replace />} />
-            </Routes>
-          </main>
-        </div>
-      </Router>
+      <ToastProvider>
+        <Router>
+          <div className="min-h-screen bg-gray-50">
+            <Header />
+            <main>
+              <Routes>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/dashboard" element={<EnhancedDashboard />} />
+                <Route path="/clients" element={<Clients />} />
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/reports" element={<Reports />} />
+                {/* Catch-all route for 404s */}
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+            </main>
+          </div>
+        </Router>
+      </ToastProvider>
     </ErrorBoundary>
   );
 }

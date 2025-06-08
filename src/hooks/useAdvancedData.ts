@@ -4,6 +4,7 @@ import { ProjectService, ProjectStats } from '../services/projectService';
 import { RevenueService, RevenueStats, MonthlyRevenue, RevenueByType } from '../services/revenueService';
 import { Client, Project, RevenueEntry } from '../types/database';
 import { MockDataService } from '../services/supabase';
+import { useToast } from '../contexts/ToastContext';
 
 interface UseDataResult<T> {
   data: T;
@@ -16,6 +17,7 @@ export function useClients() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { success, error: showError } = useToast();
 
   const fetchClients = async () => {
     try {
@@ -40,9 +42,12 @@ export function useClients() {
     try {
       const newClient = await ClientService.create(client);
       setClients(prev => [newClient, ...prev]);
+      success('Client Added', `${client.name} has been successfully added to your client list.`);
       return newClient;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add client');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add client';
+      setError(errorMessage);
+      showError('Failed to Add Client', 'There was an error adding the client. Please try again.');
       throw err;
     }
   };
@@ -53,19 +58,26 @@ export function useClients() {
       setClients(prev => prev.map(client => 
         client.id === id ? updatedClient : client
       ));
+      success('Client Updated', `${updatedClient.name} has been successfully updated.`);
       return updatedClient;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update client');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update client';
+      setError(errorMessage);
+      showError('Failed to Update Client', 'There was an error updating the client. Please try again.');
       throw err;
     }
   };
 
   const deleteClient = async (id: string) => {
     try {
+      const clientToDelete = clients.find(c => c.id === id);
       await ClientService.delete(id);
       setClients(prev => prev.filter(client => client.id !== id));
+      success('Client Deleted', `${clientToDelete?.name || 'Client'} has been successfully removed.`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete client');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete client';
+      setError(errorMessage);
+      showError('Failed to Delete Client', 'There was an error deleting the client. Please try again.');
       throw err;
     }
   };
@@ -85,6 +97,7 @@ export function useProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { success, error: showError } = useToast();
 
   const fetchProjects = async () => {
     try {
@@ -109,9 +122,12 @@ export function useProjects() {
     try {
       const newProject = await ProjectService.create(project);
       setProjects(prev => [newProject, ...prev]);
+      success('Project Created', `${project.name} has been successfully created and added to your project pipeline.`);
       return newProject;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add project');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add project';
+      setError(errorMessage);
+      showError('Failed to Create Project', 'There was an error creating the project. Please check your permissions and try again.');
       throw err;
     }
   };
@@ -122,25 +138,39 @@ export function useProjects() {
       setProjects(prev => prev.map(project => 
         project.id === id ? updatedProject : project
       ));
+      success('Project Updated', `${updatedProject.name} has been successfully updated.`);
       return updatedProject;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update project');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update project';
+      setError(errorMessage);
+      showError('Failed to Update Project', 'There was an error updating the project. Please try again.');
       throw err;
     }
   };
 
   const deleteProject = async (id: string) => {
     try {
+      const projectToDelete = projects.find(p => p.id === id);
       await ProjectService.delete(id);
       setProjects(prev => prev.filter(project => project.id !== id));
+      success('Project Deleted', `${projectToDelete?.name || 'Project'} has been successfully removed from your pipeline.`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete project');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete project';
+      setError(errorMessage);
+      showError('Failed to Delete Project', 'There was an error deleting the project. Please try again.');
       throw err;
     }
   };
 
   const updateProgress = async (id: string, actualHours: number) => {
-    return updateProject(id, { actual_hours: actualHours });
+    try {
+      const result = await updateProject(id, { actual_hours: actualHours });
+      success('Progress Updated', 'Project hours have been successfully updated.');
+      return result;
+    } catch (err) {
+      showError('Failed to Update Progress', 'There was an error updating the project progress.');
+      throw err;
+    }
   };
 
   return {
@@ -159,6 +189,7 @@ export function useRevenue() {
   const [revenue, setRevenue] = useState<RevenueEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { success, error: showError } = useToast();
 
   const fetchRevenue = async () => {
     try {
@@ -183,9 +214,12 @@ export function useRevenue() {
     try {
       const newEntry = await RevenueService.create(revenueEntry);
       setRevenue(prev => [newEntry, ...prev]);
+      success('Revenue Entry Added', `$${revenueEntry.amount.toLocaleString()} revenue entry has been successfully recorded.`);
       return newEntry;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add revenue entry');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add revenue entry';
+      setError(errorMessage);
+      showError('Failed to Add Revenue', 'There was an error adding the revenue entry. Please try again.');
       throw err;
     }
   };

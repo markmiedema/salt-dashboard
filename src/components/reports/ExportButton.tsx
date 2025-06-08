@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Download, FileText, Table, Loader2 } from 'lucide-react';
 import { ExportService } from '../../services/exportService';
 import { Client, Project, RevenueEntry } from '../../types/database';
+import { useToast } from '../../contexts/ToastContext';
 
 interface ExportButtonProps {
   clients: Client[];
@@ -21,6 +22,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [exportType, setExportType] = useState<'pdf' | 'excel' | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const { success, error } = useToast();
 
   const handleExport = async (type: 'pdf' | 'excel') => {
     setIsExporting(true);
@@ -32,12 +34,14 @@ const ExportButton: React.FC<ExportButtonProps> = ({
       
       if (type === 'pdf') {
         await ExportService.exportToPDF(exportData);
+        success('PDF Export Complete', `Your ${selectedYear} tax agency report has been downloaded successfully.`);
       } else {
         await ExportService.exportToExcel(exportData);
+        success('Excel Export Complete', `Your comprehensive ${selectedYear} data analysis has been downloaded successfully.`);
       }
-    } catch (error) {
-      console.error('Export failed:', error);
-      alert('Export failed. Please try again.');
+    } catch (exportError) {
+      console.error('Export failed:', exportError);
+      error('Export Failed', `There was an error generating your ${type.toUpperCase()} report. Please try again.`);
     } finally {
       setIsExporting(false);
       setExportType(null);
