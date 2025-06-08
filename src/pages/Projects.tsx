@@ -1,39 +1,28 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Plus, Search, Clock, CheckCircle, AlertCircle, Pause, Filter, Edit, Trash2 } from 'lucide-react';
-import { useProjects, useClients } from '../hooks/useAdvancedData';
+import { useProjects, useClients } from '../hooks/useSupabase';
 import { Project } from '../types/database';
 import ProjectModal from '../components/forms/ProjectModal';
-import Pagination from '../components/common/Pagination';
-import PageSizeSelector from '../components/common/PageSizeSelector';
 
 const Projects: React.FC = () => {
+  const { projects, loading: projectsLoading, addProject, updateProject, deleteProject } = useProjects();
+  const { clients, loading: clientsLoading } = useClients();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
 
-  // Use enhanced hooks with server-side filtering and pagination
-  const {
-    projects,
-    loading: projectsLoading,
-    error,
-    pagination,
-    addProject,
-    updateProject,
-    deleteProject,
-    goToPage,
-    setLimit
-  } = useProjects({
-    search: searchTerm,
-    status: statusFilter === 'all' ? undefined : statusFilter as Project['status'],
-    type: typeFilter === 'all' ? undefined : typeFilter as Project['type']
-  });
-
-  const { clients, loading: clientsLoading } = useClients();
-
   const loading = projectsLoading || clientsLoading;
+
+  const filteredProjects = projects.filter(project => {
+    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
+    const matchesType = typeFilter === 'all' || project.type === typeFilter;
+    
+    return matchesSearch && matchesStatus && matchesType;
+  });
 
   const getStatusInfo = (status: Project['status']) => {
     switch (status) {
@@ -99,7 +88,7 @@ const Projects: React.FC = () => {
     }
   };
 
-  if (loading && pagination.page === 1) {
+  if (loading) {
     return (
       <>
         <Helmet>
@@ -192,29 +181,16 @@ const Projects: React.FC = () => {
           </div>
         </div>
 
-        {/* Results Summary and Page Size */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-sm text-gray-600">
-            Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} projects
-          </div>
-          <PageSizeSelector
-            pageSize={pagination.limit}
-            onPageSizeChange={setLimit}
-            options={[10, 20, 50, 100]}
-          />
-        </div>
-
         {/* Projects List */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">
-              {pagination.total} Project{pagination.total !== 1 ? 's' : ''}
-              {projectsLoading && <span className="ml-2 text-sm text-gray-500">(Loading...)</span>}
+              {filteredProjects.length} Project{filteredProjects.length !== 1 ? 's' : ''}
             </h2>
           </div>
           
           <div className="divide-y divide-gray-200">
-            {projects.map((project) => {
+            {filteredProjects.map((project) => {
               const statusInfo = getStatusInfo(project.status);
               const Icon = statusInfo.icon;
               const daysUntilDue = getDaysUntilDue(project.due_date);
@@ -313,7 +289,7 @@ const Projects: React.FC = () => {
             })}
           </div>
 
-          {projects.length === 0 && !projectsLoading && (
+          {filteredProjects.length === 0 && (
             <div className="text-center py-12">
               <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p className="text-gray-500 mb-2">No projects found</p>
@@ -325,25 +301,7 @@ const Projects: React.FC = () => {
               </p>
             </div>
           )}
-
-          {/* Pagination */}
-          {pagination.totalPages > 1 && (
-            <div className="p-6 border-t border-gray-200">
-              <Pagination
-                currentPage={pagination.page}
-                totalPages={pagination.totalPages}
-                onPageChange={goToPage}
-              />
-            </div>
-          )}
         </div>
-
-        {/* Error Display */}
-        {error && (
-          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">{error}</p>
-          </div>
-        )}
 
         {/* Project Modal */}
         <ProjectModal

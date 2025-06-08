@@ -16,31 +16,15 @@ export interface ClientFilters {
   status?: Client['status'];
   entityType?: Client['entity_type'];
   search?: string;
-  page?: number;
-  limit?: number;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
 }
 
 export class ClientService {
-  static async getAll(filters?: ClientFilters): Promise<PaginatedResponse<Client>> {
-    const page = filters?.page || 1;
-    const limit = filters?.limit || 20;
-    const offset = (page - 1) * limit;
-
-    // Build the query with filters
+  static async getAll(filters?: ClientFilters): Promise<Client[]> {
     let query = supabase
       .from('clients')
-      .select('*', { count: 'exact' })
+      .select('*')
       .order('created_at', { ascending: false });
 
-    // Apply filters
     if (filters?.status) {
       query = query.eq('status', filters.status);
     }
@@ -49,31 +33,18 @@ export class ClientService {
       query = query.eq('entity_type', filters.entityType);
     }
 
-    if (filters?.search && filters.search.trim()) {
-      const searchTerm = filters.search.trim();
-      query = query.or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
+    if (filters?.search) {
+      query = query.or(`name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`);
     }
 
-    // Apply pagination
-    query = query.range(offset, offset + limit - 1);
-
-    const { data, error, count } = await query;
+    const { data, error } = await query;
     
     if (error) {
       console.error('Error fetching clients:', error);
       throw new Error(`Failed to fetch clients: ${error.message}`);
     }
 
-    const total = count || 0;
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      data: data || [],
-      total,
-      page,
-      limit,
-      totalPages
-    };
+    return data || [];
   }
 
   static async getById(id: string): Promise<Client | null> {
@@ -139,33 +110,18 @@ export class ClientService {
   }
 
   static async getStats(): Promise<ClientStats> {
-    // Get total counts with filters
-    const [totalResult, activeResult, prospectResult, inactiveResult, businessResult, individualResult] = await Promise.all([
-      supabase.from('clients').select('*', { count: 'exact', head: true }),
-      supabase.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-      supabase.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'prospect'),
-      supabase.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'inactive'),
-      supabase.from('clients').select('*', { count: 'exact', head: true }).eq('entity_type', 'business'),
-      supabase.from('clients').select('*', { count: 'exact', head: true }).eq('entity_type', 'individual')
-    ]);
-
-    // Get recently added clients (last 30 days)
+    const clients = await this.getAll();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    const { count: recentCount } = await supabase
-      .from('clients')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', thirtyDaysAgo.toISOString());
 
     const stats: ClientStats = {
-      total: totalResult.count || 0,
-      active: activeResult.count || 0,
-      prospects: prospectResult.count || 0,
-      inactive: inactiveResult.count || 0,
-      businessClients: businessResult.count || 0,
-      individualClients: individualResult.count || 0,
-      recentlyAdded: recentCount || 0,
+      total: clients.length,
+      active: clients.filter(c => c.status === 'active').length,
+      prospects: clients.filter(c => c.status === 'prospect').length,
+      inactive: clients.filter(c => c.status === 'inactive').length,
+      businessClients: clients.filter(c => c.entity_type === 'business').length,
+      individualClients: clients.filter(c => c.entity_type === 'individual').length,
+      recentlyAdded: clients.filter(c => new Date(c.created_at) > thirtyDaysAgo).length,
       conversionRate: 0
     };
 
@@ -173,34 +129,27 @@ export class ClientService {
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
     
-    const { count: convertedCount } = await supabase
-      .from('clients')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'active')
-      .gte('updated_at', ninetyDaysAgo.toISOString())
-      .lt('created_at', ninetyDaysAgo.toISOString());
+    const recentlyConverted = clients.filter(c => 
+      c.status === 'active' && 
+      new Date(c.updated_at) > ninetyDaysAgo &&
+      new Date(c.created_at) < ninetyDaysAgo
+    ).length;
 
-    const totalProspects = stats.prospects + (convertedCount || 0);
-    stats.conversionRate = totalProspects > 0 ? ((convertedCount || 0) / totalProspects) * 100 : 0;
+    const totalProspects = stats.prospects + recentlyConverted;
+    stats.conversionRate = totalProspects > 0 ? (recentlyConverted / totalProspects) * 100 : 0;
 
     return stats;
   }
 
   static async getTopClientsByRevenue(limit: number = 5): Promise<Array<Client & { totalRevenue: number; projectCount: number }>> {
     // This would typically be done with a JOIN query, but we'll simulate it
-    const { data: clients } = await supabase
-      .from('clients')
-      .select('*')
-      .limit(limit * 2); // Get more to account for filtering
-
+    const clients = await this.getAll();
     const { data: projects } = await supabase
       .from('projects')
       .select('client_id, amount');
 
-    if (!clients || !projects) return [];
-
     const clientRevenue = clients.map(client => {
-      const clientProjects = projects.filter(p => p.client_id === client.id);
+      const clientProjects = projects?.filter(p => p.client_id === client.id) || [];
       const totalRevenue = clientProjects.reduce((sum, p) => sum + (p.amount || 0), 0);
       
       return {
@@ -213,22 +162,5 @@ export class ClientService {
     return clientRevenue
       .sort((a, b) => b.totalRevenue - a.totalRevenue)
       .slice(0, limit);
-  }
-
-  static async searchClients(searchTerm: string, limit: number = 10): Promise<Client[]> {
-    if (!searchTerm.trim()) return [];
-
-    const { data, error } = await supabase
-      .from('clients')
-      .select('*')
-      .or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`)
-      .order('name')
-      .limit(limit);
-
-    if (error) {
-      throw new Error(`Failed to search clients: ${error.message}`);
-    }
-
-    return data || [];
   }
 }
