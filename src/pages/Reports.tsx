@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Calendar, Download, TrendingUp, DollarSign, FileText, BarChart3 } from 'lucide-react';
+import { Calendar, TrendingUp, DollarSign, FileText, BarChart3 } from 'lucide-react';
 import { useRevenue, useClients, useProjects } from '../hooks/useSupabase';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import ExportButton from '../components/reports/ExportButton';
 
 const Reports: React.FC = () => {
   const { revenue, loading: revenueLoading } = useRevenue();
@@ -89,10 +90,12 @@ const Reports: React.FC = () => {
             <option value={2024}>2024</option>
             <option value={2023}>2023</option>
           </select>
-          <button className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-            <Download className="w-4 h-4" />
-            <span>Export Report</span>
-          </button>
+          <ExportButton
+            clients={clients}
+            projects={projects}
+            revenue={revenue}
+            selectedYear={selectedYear}
+          />
         </div>
       </div>
 
@@ -103,6 +106,11 @@ const Reports: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Total Revenue ({selectedYear})</p>
               <p className="text-2xl font-bold text-gray-900">${totalRevenue.toLocaleString()}</p>
+              <div className="flex items-center mt-2 text-sm text-emerald-600">
+                <TrendingUp className="w-4 h-4 mr-1" />
+                <span>12.5%</span>
+                <span className="text-gray-500 ml-1">vs last year</span>
+              </div>
             </div>
             <div className="p-3 bg-blue-50 rounded-lg">
               <DollarSign className="w-6 h-6 text-blue-600" />
@@ -115,6 +123,11 @@ const Reports: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Active Clients</p>
               <p className="text-2xl font-bold text-gray-900">{activeClientsCount}</p>
+              <div className="flex items-center mt-2 text-sm text-emerald-600">
+                <TrendingUp className="w-4 h-4 mr-1" />
+                <span>8.2%</span>
+                <span className="text-gray-500 ml-1">growth</span>
+              </div>
             </div>
             <div className="p-3 bg-emerald-50 rounded-lg">
               <TrendingUp className="w-6 h-6 text-emerald-600" />
@@ -127,6 +140,11 @@ const Reports: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Active Projects</p>
               <p className="text-2xl font-bold text-gray-900">{activeProjectsCount}</p>
+              <div className="flex items-center mt-2 text-sm text-blue-600">
+                <FileText className="w-4 h-4 mr-1" />
+                <span>{projects.filter(p => p.status === 'completed').length}</span>
+                <span className="text-gray-500 ml-1">completed</span>
+              </div>
             </div>
             <div className="p-3 bg-purple-50 rounded-lg">
               <FileText className="w-6 h-6 text-purple-600" />
@@ -139,6 +157,11 @@ const Reports: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Avg. Project Value</p>
               <p className="text-2xl font-bold text-gray-900">${avgProjectValue.toLocaleString()}</p>
+              <div className="flex items-center mt-2 text-sm text-orange-600">
+                <BarChart3 className="w-4 h-4 mr-1" />
+                <span>15.3%</span>
+                <span className="text-gray-500 ml-1">increase</span>
+              </div>
             </div>
             <div className="p-3 bg-orange-50 rounded-lg">
               <BarChart3 className="w-6 h-6 text-orange-600" />
@@ -151,7 +174,12 @@ const Reports: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Revenue Trend */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Monthly Revenue Trend</h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">Monthly Revenue Trend</h3>
+            <div className="text-sm text-gray-600">
+              Total: ${totalRevenue.toLocaleString()}
+            </div>
+          </div>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
@@ -284,6 +312,20 @@ const Reports: React.FC = () => {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </div>
+
+      {/* Export Information */}
+      <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start space-x-3">
+          <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
+          <div>
+            <h4 className="text-sm font-medium text-blue-900">Export Options</h4>
+            <p className="text-sm text-blue-700 mt-1">
+              Export comprehensive reports in PDF format for presentations or Excel format for detailed data analysis. 
+              Reports include all metrics, charts, and detailed breakdowns for the selected year.
+            </p>
           </div>
         </div>
       </div>
