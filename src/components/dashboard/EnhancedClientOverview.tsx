@@ -88,15 +88,13 @@ const EnhancedClientOverview: React.FC = () => {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">Client Overview</h3>
-          <p className="text-sm text-gray-600 mt-1">
-            {stats.conversionRate > 0 && (
-              <span className="text-emerald-600 font-medium">
-                {stats.conversionRate.toFixed(1)}% conversion rate
-              </span>
-            )}
-          </p>
+        <h3 className="text-lg font-semibold text-gray-900">Client Overview</h3>
+        <div className="text-sm text-gray-600">
+          {stats.conversionRate > 0 && (
+            <span className="text-emerald-600 font-medium">
+              {stats.conversionRate.toFixed(1)}% conversion rate
+            </span>
+          )}
         </div>
       </div>
       
