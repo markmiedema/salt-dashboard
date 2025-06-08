@@ -1,7 +1,7 @@
 import React from 'react';
-import AdvancedRevenueSummary from '../components/dashboard/AdvancedRevenueSummary';
+import EnhancedRevenueSummary from '../components/dashboard/EnhancedRevenueSummary';
 import EnhancedClientOverview from '../components/dashboard/EnhancedClientOverview';
-import AdvancedProjectPipeline from '../components/dashboard/AdvancedProjectPipeline';
+import EnhancedProjectPipeline from '../components/dashboard/EnhancedProjectPipeline';
 
 const EnhancedDashboard: React.FC = () => {
   return (
@@ -14,13 +14,13 @@ const EnhancedDashboard: React.FC = () => {
       </div>
 
       <div className="space-y-8">
-        {/* Advanced Revenue Analytics */}
-        <AdvancedRevenueSummary targetMonthly={75000} />
+        {/* Advanced Revenue Analytics with Caching */}
+        <EnhancedRevenueSummary targetMonthly={75000} />
 
-        {/* Enhanced Client and Project Management */}
+        {/* Enhanced Client and Project Management with Optimistic Updates */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           <EnhancedClientOverview />
-          <AdvancedProjectPipeline />
+          <EnhancedProjectPipeline />
         </div>
       </div>
     </div>
