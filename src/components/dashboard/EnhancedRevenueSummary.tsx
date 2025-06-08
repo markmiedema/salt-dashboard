@@ -1,7 +1,7 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Calendar, Target, AlertTriangle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { useEnhancedRevenueSummary, useEnhancedMonthlyTrends } from '../../hooks/useEnhancedData';
+import { useEnhancedRevenueSummary, useEnhancedMonthlyTrends } from '../../hooks/useAdvancedData';
 import CacheStatus from '../common/CacheStatus';
 
 interface EnhancedRevenueSummaryProps {

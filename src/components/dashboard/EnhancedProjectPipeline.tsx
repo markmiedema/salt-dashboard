@@ -1,6 +1,6 @@
 import React from 'react';
 import { Clock, CheckCircle, AlertCircle, Pause, AlertTriangle, Calendar } from 'lucide-react';
-import { useEnhancedProjects, useEnhancedProjectStats } from '../../hooks/useEnhancedData';
+import { useEnhancedProjects, useEnhancedProjectStats } from '../../hooks/useAdvancedData';
 import { ProjectService } from '../../services/projectService';
 import { Project } from '../../types/database';
 import CacheStatus from '../common/CacheStatus';
