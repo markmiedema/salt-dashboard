@@ -3,7 +3,7 @@ import { Clock, CheckCircle, AlertCircle, Pause, AlertTriangle, Calendar } from 
 import { useEnhancedProjects, useEnhancedProjectStats } from '../../hooks/useAdvancedData';
 import { ProjectService } from '../../services/projectService';
 import { Project } from '../../types/database';
-import CacheStatus from '../common/CacheStatus';
+import CacheStatus from '../../common/CacheStatus';
 
 const EnhancedProjectPipeline: React.FC = () => {
   const { 

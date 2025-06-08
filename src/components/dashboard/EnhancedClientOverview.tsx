@@ -1,7 +1,7 @@
 import React from 'react';
 import { Users, Building, User, Eye, TrendingUp, AlertCircle } from 'lucide-react';
 import { useEnhancedClients, useEnhancedClientStats } from '../../hooks/useAdvancedData';
-import CacheStatus from '../common/CacheStatus';
+import CacheStatus from '../../common/CacheStatus';
 
 const EnhancedClientOverview: React.FC = () => {
   const { 
