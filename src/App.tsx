@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Header from './components/common/Header';
-import Dashboard from './pages/Dashboard';
+import EnhancedDashboard from './pages/EnhancedDashboard';
 import Clients from './pages/Clients';
 import Projects from './pages/Projects';
 import Reports from './pages/Reports';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import { TeamsService } from './services/teamsService';
 
 function App() {
@@ -33,7 +34,7 @@ function App() {
       case 'reports':
         return <Reports />;
       default:
-        return <Dashboard />;
+        return <EnhancedDashboard />;
     }
   };
 
@@ -49,12 +50,14 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header currentPage={currentPage} onNavigate={setCurrentPage} />
-      <main>
-        {renderCurrentPage()}
-      </main>
-    </div>
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50">
+        <Header currentPage={currentPage} onNavigate={setCurrentPage} />
+        <main>
+          {renderCurrentPage()}
+        </main>
+      </div>
+    </ErrorBoundary>
   );
 }
 
