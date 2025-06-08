@@ -24,8 +24,6 @@ const Clients: React.FC = () => {
     updateClient,
     deleteClient,
     goToPage,
-    nextPage,
-    prevPage,
     setLimit
   } = useClients({
     search: searchTerm,

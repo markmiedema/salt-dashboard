@@ -24,8 +24,6 @@ const Projects: React.FC = () => {
     updateProject,
     deleteProject,
     goToPage,
-    nextPage,
-    prevPage,
     setLimit
   } = useProjects({
     search: searchTerm,
