@@ -29,7 +29,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumbs */}
         {breadcrumbs && breadcrumbs.length > 0 && (
-          <nav className="mb-4" aria-label="Breadcrumb">
+          <nav className="mb-4\" aria-label="Breadcrumb">
             <ol className="flex items-center space-x-2 text-sm text-gray-500">
               {breadcrumbs.map((crumb, index) => (
                 <li key={index} className="flex items-center">
