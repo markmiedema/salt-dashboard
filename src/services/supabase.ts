@@ -4,22 +4,14 @@ import { Database } from '../types/database';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Check if we have valid Supabase configuration
-const hasValidSupabaseConfig = supabaseUrl && supabaseAnonKey && 
-  supabaseUrl !== 'https://xvrcmyfserdmcsbrbutf.supabase.co' && 
-  supabaseAnonKey !== 'placeholder-key';
-
-if (!hasValidSupabaseConfig) {
-  console.warn('Supabase configuration missing or using placeholder values. Using mock data for development.');
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn('Supabase configuration missing. Using mock data for development.');
 }
 
 export const supabase = createClient<Database>(
   supabaseUrl || 'https://xvrcmyfserdmcsbrbutf.supabase.co',
   supabaseAnonKey || 'placeholder-key'
 );
-
-// Export flag to indicate if we're using real Supabase or mock data
-export const isUsingMockData = !hasValidSupabaseConfig;
 
 // Mock data service for development without Supabase
 export class MockDataService {
