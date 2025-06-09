@@ -10,13 +10,7 @@ interface ClientModalProps {
   title?: string;
 }
 
-const ClientModal: React.FC<ClientModalProps> = ({
-  isOpen,
-  onClose,
-  onSubmit,
-  client,
-  title
-}) => {
+const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSubmit, client, title }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -65,7 +59,10 @@ const ClientModal: React.FC<ClientModalProps> = ({
       newErrors.email = 'Please enter a valid email address';
     }
 
-    if (formData.phone && !/^[\+]?[1-9][\d]{0,15}$/.test(formData.phone.replace(/[\s\-\(\)]/g, ''))) {
+    if (
+      formData.phone &&
+      !/^[\+]?[1-9][\d]{0,15}$/.test(formData.phone.replace(/[\s\-\(\)]/g, ''))
+    ) {
       newErrors.phone = 'Please enter a valid phone number';
     }
 
@@ -75,7 +72,7 @@ const ClientModal: React.FC<ClientModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -98,9 +95,9 @@ const ClientModal: React.FC<ClientModalProps> = ({
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 
@@ -119,7 +116,7 @@ const ClientModal: React.FC<ClientModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       onKeyDown={handleKeyDown}
       tabIndex={-1}
@@ -293,7 +290,7 @@ const ClientModal: React.FC<ClientModalProps> = ({
               {isSubmitting && (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               )}
-              <span>{isSubmitting ? 'Saving...' : (client ? 'Update Client' : 'Add Client')}</span>
+              <span>{isSubmitting ? 'Saving...' : client ? 'Update Client' : 'Add Client'}</span>
             </button>
           </div>
         </form>

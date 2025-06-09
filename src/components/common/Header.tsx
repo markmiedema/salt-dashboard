@@ -36,7 +36,7 @@ const Header: React.FC = () => {
 
   const getCurrentPageId = () => {
     const currentPath = location.pathname;
-    const currentNav = navigation.find(nav => nav.path === currentPath);
+    const currentNav = navigation.find((nav) => nav.path === currentPath);
     return currentNav?.id || 'dashboard';
   };
 
@@ -47,7 +47,7 @@ const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Title */}
-          <div 
+          <div
             className="flex items-center space-x-3 cursor-pointer"
             onClick={() => handleNavigation('/dashboard')}
           >

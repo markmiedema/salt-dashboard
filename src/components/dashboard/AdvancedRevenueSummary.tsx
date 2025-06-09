@@ -1,14 +1,31 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, DollarSign, Calendar, Target, AlertTriangle } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Calendar,
+  Target,
+  AlertTriangle
+} from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line
+} from 'recharts';
 import { useRevenueSummary, useMonthlyTrends } from '../../hooks/useAdvancedData';
 
 interface AdvancedRevenueSummaryProps {
   targetMonthly?: number;
 }
 
-const AdvancedRevenueSummary: React.FC<AdvancedRevenueSummaryProps> = ({ 
-  targetMonthly = 75000 
+const AdvancedRevenueSummary: React.FC<AdvancedRevenueSummaryProps> = ({
+  targetMonthly = 75000
 }) => {
   const { data: stats, loading: statsLoading } = useRevenueSummary();
   const { data: trends, loading: trendsLoading } = useMonthlyTrends();
@@ -87,30 +104,37 @@ const AdvancedRevenueSummary: React.FC<AdvancedRevenueSummaryProps> = ({
           const Icon = metric.icon;
           const isPositive = metric.change >= 0;
           const TrendIcon = isPositive ? TrendingUp : TrendingDown;
-          
+
           return (
-            <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+            <div
+              key={index}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200"
+            >
               <div className="flex items-center justify-between mb-4">
                 <div className={`p-3 rounded-lg bg-${metric.color}-50`}>
                   <Icon className={`w-6 h-6 text-${metric.color}-600`} />
                 </div>
                 {metric.progress && (
-                  <div className={`text-xs px-2 py-1 rounded-full ${
-                    metric.progress >= 90 ? 'bg-emerald-100 text-emerald-800' :
-                    metric.progress >= 70 ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
+                  <div
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      metric.progress >= 90
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : metric.progress >= 70
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-red-100 text-red-800'
+                    }`}
+                  >
                     {metric.progress.toFixed(0)}% of target
                   </div>
                 )}
               </div>
-              
+
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-1">{metric.title}</p>
                 <p className="text-2xl font-bold text-gray-900 mb-2">
                   ${metric.value.toLocaleString()}
                 </p>
-                
+
                 {metric.target && (
                   <div className="mb-2">
                     <div className="flex justify-between text-xs text-gray-600 mb-1">
@@ -118,22 +142,26 @@ const AdvancedRevenueSummary: React.FC<AdvancedRevenueSummaryProps> = ({
                       <span>${(metric.target - metric.value).toLocaleString()} remaining</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className={`h-2 rounded-full transition-all duration-300 ${
-                          metric.progress >= 90 ? 'bg-emerald-500' :
-                          metric.progress >= 70 ? 'bg-yellow-500' :
-                          'bg-red-500'
+                          metric.progress >= 90
+                            ? 'bg-emerald-500'
+                            : metric.progress >= 70
+                              ? 'bg-yellow-500'
+                              : 'bg-red-500'
                         }`}
                         style={{ width: `${Math.min(metric.progress, 100)}%` }}
                       ></div>
                     </div>
                   </div>
                 )}
-                
+
                 <div className="flex items-center justify-between">
-                  <div className={`flex items-center text-sm ${
-                    isPositive ? 'text-emerald-600' : 'text-red-600'
-                  }`}>
+                  <div
+                    className={`flex items-center text-sm ${
+                      isPositive ? 'text-emerald-600' : 'text-red-600'
+                    }`}
+                  >
                     <TrendIcon className="w-4 h-4 mr-1" />
                     <span className="font-medium">{Math.abs(metric.change).toFixed(1)}%</span>
                   </div>
@@ -165,19 +193,19 @@ const AdvancedRevenueSummary: React.FC<AdvancedRevenueSummaryProps> = ({
             </div>
           </div>
         </div>
-        
+
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="monthName" 
+              <XAxis
+                dataKey="monthName"
                 stroke="#6b7280"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
               />
-              <YAxis 
+              <YAxis
                 yAxisId="revenue"
                 stroke="#6b7280"
                 fontSize={12}
@@ -185,7 +213,7 @@ const AdvancedRevenueSummary: React.FC<AdvancedRevenueSummaryProps> = ({
                 axisLine={false}
                 tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
               />
-              <YAxis 
+              <YAxis
                 yAxisId="growth"
                 orientation="right"
                 stroke="#10b981"
@@ -194,7 +222,7 @@ const AdvancedRevenueSummary: React.FC<AdvancedRevenueSummaryProps> = ({
                 axisLine={false}
                 tickFormatter={(value) => `${value.toFixed(0)}%`}
               />
-              <Tooltip 
+              <Tooltip
                 formatter={(value: number, name: string) => {
                   if (name === 'Growth Rate') {
                     return [`${value.toFixed(1)}%`, name];
@@ -202,25 +230,25 @@ const AdvancedRevenueSummary: React.FC<AdvancedRevenueSummaryProps> = ({
                   return [`$${value.toLocaleString()}`, name];
                 }}
                 labelStyle={{ color: '#374151' }}
-                contentStyle={{ 
-                  backgroundColor: 'white', 
+                contentStyle={{
+                  backgroundColor: 'white',
                   border: '1px solid #e5e7eb',
                   borderRadius: '8px',
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                 }}
               />
-              <Bar 
+              <Bar
                 yAxisId="revenue"
-                dataKey="total" 
-                fill="#3b82f6" 
+                dataKey="total"
+                fill="#3b82f6"
                 radius={[2, 2, 0, 0]}
                 opacity={0.8}
               />
-              <Line 
+              <Line
                 yAxisId="growth"
-                type="monotone" 
-                dataKey="growthRate" 
-                stroke="#10b981" 
+                type="monotone"
+                dataKey="growthRate"
+                stroke="#10b981"
                 strokeWidth={3}
                 dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6, stroke: '#10b981', strokeWidth: 2 }}
@@ -233,7 +261,8 @@ const AdvancedRevenueSummary: React.FC<AdvancedRevenueSummaryProps> = ({
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-gray-200">
           <div className="text-center">
             <div className="text-2xl font-bold text-gray-900">
-              {stats.monthlyGrowth > 0 ? '+' : ''}{stats.monthlyGrowth.toFixed(1)}%
+              {stats.monthlyGrowth > 0 ? '+' : ''}
+              {stats.monthlyGrowth.toFixed(1)}%
             </div>
             <div className="text-sm text-gray-600">Monthly Growth</div>
           </div>

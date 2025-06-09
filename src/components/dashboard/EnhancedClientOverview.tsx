@@ -29,31 +29,31 @@ const EnhancedClientOverview: React.FC = () => {
   }
 
   const statCards = [
-    { 
-      label: 'Total Clients', 
-      value: stats.total, 
-      icon: Users, 
+    {
+      label: 'Total Clients',
+      value: stats.total,
+      icon: Users,
       color: 'blue',
       change: `+${stats.recentlyAdded} this month`
     },
-    { 
-      label: 'Active Clients', 
-      value: stats.active, 
-      icon: Eye, 
+    {
+      label: 'Active Clients',
+      value: stats.active,
+      icon: Eye,
       color: 'emerald',
       change: `${((stats.active / stats.total) * 100).toFixed(0)}% of total`
     },
-    { 
-      label: 'Prospects', 
-      value: stats.prospects, 
-      icon: TrendingUp, 
+    {
+      label: 'Prospects',
+      value: stats.prospects,
+      icon: TrendingUp,
       color: 'purple',
       change: `${stats.conversionRate.toFixed(0)}% conversion rate`
     },
-    { 
-      label: 'Businesses', 
-      value: stats.businessClients, 
-      icon: Building, 
+    {
+      label: 'Businesses',
+      value: stats.businessClients,
+      icon: Building,
       color: 'orange',
       change: `${stats.individualClients} individuals`
     }
@@ -78,7 +78,7 @@ const EnhancedClientOverview: React.FC = () => {
 
   const getPriorityClients = () => {
     return clients
-      .filter(c => c.status === 'prospect')
+      .filter((c) => c.status === 'prospect')
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 3);
   };
@@ -97,14 +97,19 @@ const EnhancedClientOverview: React.FC = () => {
           )}
         </div>
       </div>
-      
+
       {/* Enhanced Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {statCards.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <div key={index} className="text-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-              <div className={`inline-flex items-center justify-center w-10 h-10 bg-${stat.color}-100 rounded-lg mb-2`}>
+            <div
+              key={index}
+              className="text-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <div
+                className={`inline-flex items-center justify-center w-10 h-10 bg-${stat.color}-100 rounded-lg mb-2`}
+              >
                 <Icon className={`w-5 h-5 text-${stat.color}-600`} />
               </div>
               <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
@@ -127,7 +132,11 @@ const EnhancedClientOverview: React.FC = () => {
               <div key={client.id} className="flex items-center justify-between text-sm">
                 <span className="text-blue-800">{client.name}</span>
                 <span className="text-blue-600">
-                  {Math.ceil((new Date().getTime() - new Date(client.created_at).getTime()) / (1000 * 60 * 60 * 24))} days
+                  {Math.ceil(
+                    (new Date().getTime() - new Date(client.created_at).getTime()) /
+                      (1000 * 60 * 60 * 24)
+                  )}{' '}
+                  days
                 </span>
               </div>
             ))}
@@ -140,12 +149,21 @@ const EnhancedClientOverview: React.FC = () => {
         <h4 className="text-md font-medium text-gray-900 mb-4">Recent Activity</h4>
         <div className="space-y-3">
           {recentClients.map((client) => (
-            <div key={client.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            <div
+              key={client.id}
+              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            >
               <div className="flex items-center space-x-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
-                  client.entity_type === 'business' ? 'bg-purple-500' : 'bg-blue-500'
-                }`}>
-                  {client.entity_type === 'business' ? <Building className="w-4 h-4" /> : <User className="w-4 h-4" />}
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
+                    client.entity_type === 'business' ? 'bg-purple-500' : 'bg-blue-500'
+                  }`}
+                >
+                  {client.entity_type === 'business' ? (
+                    <Building className="w-4 h-4" />
+                  ) : (
+                    <User className="w-4 h-4" />
+                  )}
                 </div>
                 <div className="flex-1">
                   <div className="font-medium text-gray-900">{client.name}</div>
@@ -153,7 +171,9 @@ const EnhancedClientOverview: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(client.status)}`}>
+                <span
+                  className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(client.status)}`}
+                >
                   {client.status}
                 </span>
                 <div className="text-xs text-gray-500">

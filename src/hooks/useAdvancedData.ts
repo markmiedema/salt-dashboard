@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 import { ClientService, ClientStats } from '../services/clientService';
 import { ProjectService, ProjectStats } from '../services/projectService';
-import { RevenueService, RevenueStats, MonthlyRevenue, RevenueByType } from '../services/revenueService';
+import {
+  RevenueService,
+  RevenueStats,
+  MonthlyRevenue,
+  RevenueByType
+} from '../services/revenueService';
 import { Client, Project, RevenueEntry } from '../types/database';
 import { MockDataService } from '../services/supabase';
 import { useToast } from '../contexts/ToastContext';
@@ -41,7 +46,7 @@ export function useClients() {
   const addClient = async (client: Omit<Client, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       const newClient = await ClientService.create(client);
-      setClients(prev => [newClient, ...prev]);
+      setClients((prev) => [newClient, ...prev]);
       success('Client Added', `${client.name} has been successfully added to your client list.`);
       return newClient;
     } catch (err) {
@@ -55,29 +60,36 @@ export function useClients() {
   const updateClient = async (id: string, updates: Partial<Client>) => {
     try {
       const updatedClient = await ClientService.update(id, updates);
-      setClients(prev => prev.map(client => 
-        client.id === id ? updatedClient : client
-      ));
+      setClients((prev) => prev.map((client) => (client.id === id ? updatedClient : client)));
       success('Client Updated', `${updatedClient.name} has been successfully updated.`);
       return updatedClient;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update client';
       setError(errorMessage);
-      showError('Failed to Update Client', 'There was an error updating the client. Please try again.');
+      showError(
+        'Failed to Update Client',
+        'There was an error updating the client. Please try again.'
+      );
       throw err;
     }
   };
 
   const deleteClient = async (id: string) => {
     try {
-      const clientToDelete = clients.find(c => c.id === id);
+      const clientToDelete = clients.find((c) => c.id === id);
       await ClientService.delete(id);
-      setClients(prev => prev.filter(client => client.id !== id));
-      success('Client Deleted', `${clientToDelete?.name || 'Client'} has been successfully removed.`);
+      setClients((prev) => prev.filter((client) => client.id !== id));
+      success(
+        'Client Deleted',
+        `${clientToDelete?.name || 'Client'} has been successfully removed.`
+      );
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete client';
       setError(errorMessage);
-      showError('Failed to Delete Client', 'There was an error deleting the client. Please try again.');
+      showError(
+        'Failed to Delete Client',
+        'There was an error deleting the client. Please try again.'
+      );
       throw err;
     }
   };
@@ -121,13 +133,19 @@ export function useProjects() {
   const addProject = async (project: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       const newProject = await ProjectService.create(project);
-      setProjects(prev => [newProject, ...prev]);
-      success('Project Created', `${project.name} has been successfully created and added to your project pipeline.`);
+      setProjects((prev) => [newProject, ...prev]);
+      success(
+        'Project Created',
+        `${project.name} has been successfully created and added to your project pipeline.`
+      );
       return newProject;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to add project';
       setError(errorMessage);
-      showError('Failed to Create Project', 'There was an error creating the project. Please check your permissions and try again.');
+      showError(
+        'Failed to Create Project',
+        'There was an error creating the project. Please check your permissions and try again.'
+      );
       throw err;
     }
   };
@@ -135,29 +153,36 @@ export function useProjects() {
   const updateProject = async (id: string, updates: Partial<Project>) => {
     try {
       const updatedProject = await ProjectService.update(id, updates);
-      setProjects(prev => prev.map(project => 
-        project.id === id ? updatedProject : project
-      ));
+      setProjects((prev) => prev.map((project) => (project.id === id ? updatedProject : project)));
       success('Project Updated', `${updatedProject.name} has been successfully updated.`);
       return updatedProject;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update project';
       setError(errorMessage);
-      showError('Failed to Update Project', 'There was an error updating the project. Please try again.');
+      showError(
+        'Failed to Update Project',
+        'There was an error updating the project. Please try again.'
+      );
       throw err;
     }
   };
 
   const deleteProject = async (id: string) => {
     try {
-      const projectToDelete = projects.find(p => p.id === id);
+      const projectToDelete = projects.find((p) => p.id === id);
       await ProjectService.delete(id);
-      setProjects(prev => prev.filter(project => project.id !== id));
-      success('Project Deleted', `${projectToDelete?.name || 'Project'} has been successfully removed from your pipeline.`);
+      setProjects((prev) => prev.filter((project) => project.id !== id));
+      success(
+        'Project Deleted',
+        `${projectToDelete?.name || 'Project'} has been successfully removed from your pipeline.`
+      );
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete project';
       setError(errorMessage);
-      showError('Failed to Delete Project', 'There was an error deleting the project. Please try again.');
+      showError(
+        'Failed to Delete Project',
+        'There was an error deleting the project. Please try again.'
+      );
       throw err;
     }
   };
@@ -213,13 +238,19 @@ export function useRevenue() {
   const addRevenue = async (revenueEntry: Omit<RevenueEntry, 'id' | 'created_at'>) => {
     try {
       const newEntry = await RevenueService.create(revenueEntry);
-      setRevenue(prev => [newEntry, ...prev]);
-      success('Revenue Entry Added', `$${revenueEntry.amount.toLocaleString()} revenue entry has been successfully recorded.`);
+      setRevenue((prev) => [newEntry, ...prev]);
+      success(
+        'Revenue Entry Added',
+        `$${revenueEntry.amount.toLocaleString()} revenue entry has been successfully recorded.`
+      );
       return newEntry;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to add revenue entry';
       setError(errorMessage);
-      showError('Failed to Add Revenue', 'There was an error adding the revenue entry. Please try again.');
+      showError(
+        'Failed to Add Revenue',
+        'There was an error adding the revenue entry. Please try again.'
+      );
       throw err;
     }
   };
@@ -259,11 +290,11 @@ export function useClientStats(): UseDataResult<ClientStats> {
       const clients = MockDataService.mockClients;
       setData({
         total: clients.length,
-        active: clients.filter(c => c.status === 'active').length,
-        prospects: clients.filter(c => c.status === 'prospect').length,
-        inactive: clients.filter(c => c.status === 'inactive').length,
-        businessClients: clients.filter(c => c.entity_type === 'business').length,
-        individualClients: clients.filter(c => c.entity_type === 'individual').length,
+        active: clients.filter((c) => c.status === 'active').length,
+        prospects: clients.filter((c) => c.status === 'prospect').length,
+        inactive: clients.filter((c) => c.status === 'inactive').length,
+        businessClients: clients.filter((c) => c.entity_type === 'business').length,
+        individualClients: clients.filter((c) => c.entity_type === 'individual').length,
         recentlyAdded: 1,
         conversionRate: 75
       });
@@ -308,10 +339,10 @@ export function useProjectStats(): UseDataResult<ProjectStats> {
       const totalValue = projects.reduce((sum, p) => sum + (p.amount || 0), 0);
       setData({
         total: projects.length,
-        pending: projects.filter(p => p.status === 'pending').length,
-        inProgress: projects.filter(p => p.status === 'in_progress').length,
-        completed: projects.filter(p => p.status === 'completed').length,
-        onHold: projects.filter(p => p.status === 'on_hold').length,
+        pending: projects.filter((p) => p.status === 'pending').length,
+        inProgress: projects.filter((p) => p.status === 'in_progress').length,
+        completed: projects.filter((p) => p.status === 'completed').length,
+        onHold: projects.filter((p) => p.status === 'on_hold').length,
         overdue: 0,
         totalValue,
         averageValue: totalValue / projects.length,
@@ -392,9 +423,36 @@ export function useMonthlyTrends(year?: number): UseDataResult<MonthlyRevenue[]>
       setError(err instanceof Error ? err.message : 'Failed to fetch revenue trends');
       // Fallback data
       setData([
-        { month: 1, year: 2024, monthName: 'Jan', total: 71500, returns: 45000, project: 18000, on_call: 8500, growth: 8.5 },
-        { month: 2, year: 2024, monthName: 'Feb', total: 64000, returns: 52000, project: 12000, on_call: 0, growth: -10.5 },
-        { month: 3, year: 2024, monthName: 'Mar', total: 53000, returns: 38000, project: 0, on_call: 15000, growth: -17.2 }
+        {
+          month: 1,
+          year: 2024,
+          monthName: 'Jan',
+          total: 71500,
+          returns: 45000,
+          project: 18000,
+          on_call: 8500,
+          growth: 8.5
+        },
+        {
+          month: 2,
+          year: 2024,
+          monthName: 'Feb',
+          total: 64000,
+          returns: 52000,
+          project: 12000,
+          on_call: 0,
+          growth: -10.5
+        },
+        {
+          month: 3,
+          year: 2024,
+          monthName: 'Mar',
+          total: 53000,
+          returns: 38000,
+          project: 0,
+          on_call: 15000,
+          growth: -17.2
+        }
       ]);
     } finally {
       setLoading(false);

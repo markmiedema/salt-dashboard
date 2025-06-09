@@ -9,7 +9,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
   if (import.meta.env.DEV) {
     console.warn('Supabase environment variables are missing. Falling back to mock data service.');
   } else {
-    throw new Error('Supabase environment variables VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are required in production.');
+    throw new Error(
+      'Supabase environment variables VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are required in production.'
+    );
   }
 }
 
@@ -102,10 +104,60 @@ export class MockDataService {
   ];
 
   static mockRevenue = [
-    { id: '1', type: 'returns' as const, amount: 45000, month: 1, year: 2024, description: 'Individual and business returns', project_id: null, client_id: null, created_at: '2024-01-31T23:59:00Z' },
-    { id: '2', type: 'project' as const, amount: 18000, month: 1, year: 2024, description: 'Nexus analysis projects', project_id: '1', client_id: '1', created_at: '2024-01-31T23:59:00Z' },
-    { id: '3', type: 'on_call' as const, amount: 8500, month: 1, year: 2024, description: 'Advisory consultations', project_id: null, client_id: null, created_at: '2024-01-31T23:59:00Z' },
-    { id: '4', type: 'returns' as const, amount: 52000, month: 2, year: 2024, description: 'Tax preparation services', project_id: null, client_id: null, created_at: '2024-02-29T23:59:00Z' },
-    { id: '5', type: 'project' as const, amount: 12000, month: 2, year: 2024, description: 'VDA and compliance projects', project_id: null, client_id: null, created_at: '2024-02-29T23:59:00Z' }
+    {
+      id: '1',
+      type: 'returns' as const,
+      amount: 45000,
+      month: 1,
+      year: 2024,
+      description: 'Individual and business returns',
+      project_id: null,
+      client_id: null,
+      created_at: '2024-01-31T23:59:00Z'
+    },
+    {
+      id: '2',
+      type: 'project' as const,
+      amount: 18000,
+      month: 1,
+      year: 2024,
+      description: 'Nexus analysis projects',
+      project_id: '1',
+      client_id: '1',
+      created_at: '2024-01-31T23:59:00Z'
+    },
+    {
+      id: '3',
+      type: 'on_call' as const,
+      amount: 8500,
+      month: 1,
+      year: 2024,
+      description: 'Advisory consultations',
+      project_id: null,
+      client_id: null,
+      created_at: '2024-01-31T23:59:00Z'
+    },
+    {
+      id: '4',
+      type: 'returns' as const,
+      amount: 52000,
+      month: 2,
+      year: 2024,
+      description: 'Tax preparation services',
+      project_id: null,
+      client_id: null,
+      created_at: '2024-02-29T23:59:00Z'
+    },
+    {
+      id: '5',
+      type: 'project' as const,
+      amount: 12000,
+      month: 2,
+      year: 2024,
+      description: 'VDA and compliance projects',
+      project_id: null,
+      client_id: null,
+      created_at: '2024-02-29T23:59:00Z'
+    }
   ];
 }

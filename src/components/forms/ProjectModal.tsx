@@ -80,11 +80,17 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
       newErrors.amount = 'Amount must be a valid positive number';
     }
 
-    if (formData.estimated_hours && (isNaN(Number(formData.estimated_hours)) || Number(formData.estimated_hours) < 0)) {
+    if (
+      formData.estimated_hours &&
+      (isNaN(Number(formData.estimated_hours)) || Number(formData.estimated_hours) < 0)
+    ) {
       newErrors.estimated_hours = 'Estimated hours must be a valid positive number';
     }
 
-    if (formData.actual_hours && (isNaN(Number(formData.actual_hours)) || Number(formData.actual_hours) < 0)) {
+    if (
+      formData.actual_hours &&
+      (isNaN(Number(formData.actual_hours)) || Number(formData.actual_hours) < 0)
+    ) {
       newErrors.actual_hours = 'Actual hours must be a valid positive number';
     }
 
@@ -98,7 +104,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -126,9 +132,9 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 
@@ -147,7 +153,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       onKeyDown={handleKeyDown}
       tabIndex={-1}
@@ -308,7 +314,10 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
           {/* Hours */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="estimated_hours" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="estimated_hours"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Estimated Hours
               </label>
               <div className="relative">
@@ -327,11 +336,16 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                   disabled={isSubmitting}
                 />
               </div>
-              {errors.estimated_hours && <p className="mt-1 text-sm text-red-600">{errors.estimated_hours}</p>}
+              {errors.estimated_hours && (
+                <p className="mt-1 text-sm text-red-600">{errors.estimated_hours}</p>
+              )}
             </div>
 
             <div>
-              <label htmlFor="actual_hours" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="actual_hours"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Actual Hours
               </label>
               <div className="relative">
@@ -350,7 +364,9 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                   disabled={isSubmitting}
                 />
               </div>
-              {errors.actual_hours && <p className="mt-1 text-sm text-red-600">{errors.actual_hours}</p>}
+              {errors.actual_hours && (
+                <p className="mt-1 text-sm text-red-600">{errors.actual_hours}</p>
+              )}
             </div>
           </div>
 
@@ -398,7 +414,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
               {isSubmitting && (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               )}
-              <span>{isSubmitting ? 'Saving...' : (project ? 'Update Project' : 'Add Project')}</span>
+              <span>{isSubmitting ? 'Saving...' : project ? 'Update Project' : 'Add Project'}</span>
             </button>
           </div>
         </form>

@@ -33,11 +33,26 @@ const AdvancedProjectPipeline: React.FC = () => {
   const getStatusInfo = (status: Project['status']) => {
     switch (status) {
       case 'pending':
-        return { icon: Clock, color: 'yellow', bgColor: 'bg-yellow-100', textColor: 'text-yellow-800' };
+        return {
+          icon: Clock,
+          color: 'yellow',
+          bgColor: 'bg-yellow-100',
+          textColor: 'text-yellow-800'
+        };
       case 'in_progress':
-        return { icon: AlertCircle, color: 'blue', bgColor: 'bg-blue-100', textColor: 'text-blue-800' };
+        return {
+          icon: AlertCircle,
+          color: 'blue',
+          bgColor: 'bg-blue-100',
+          textColor: 'text-blue-800'
+        };
       case 'completed':
-        return { icon: CheckCircle, color: 'emerald', bgColor: 'bg-emerald-100', textColor: 'text-emerald-800' };
+        return {
+          icon: CheckCircle,
+          color: 'emerald',
+          bgColor: 'bg-emerald-100',
+          textColor: 'text-emerald-800'
+        };
       case 'on_hold':
         return { icon: Pause, color: 'gray', bgColor: 'bg-gray-100', textColor: 'text-gray-800' };
       default:
@@ -47,11 +62,11 @@ const AdvancedProjectPipeline: React.FC = () => {
 
   const getTypeLabel = (type: Project['type']) => {
     const labels = {
-      'nexus_analysis': 'Nexus Analysis',
-      'vda': 'VDA',
-      'tax_prep': 'Tax Preparation',
-      'bookkeeping': 'Bookkeeping',
-      'advisory': 'Advisory'
+      nexus_analysis: 'Nexus Analysis',
+      vda: 'VDA',
+      tax_prep: 'Tax Preparation',
+      bookkeeping: 'Bookkeeping',
+      advisory: 'Advisory'
     };
     return labels[type] || type;
   };
@@ -73,7 +88,7 @@ const AdvancedProjectPipeline: React.FC = () => {
 
   // Sort projects by priority and due date
   const sortedProjects = projects
-    .map(project => ({
+    .map((project) => ({
       ...project,
       priority: getPriorityLevel(project),
       daysUntilDue: ProjectService.getDaysUntilDue(project.due_date)
@@ -84,51 +99,55 @@ const AdvancedProjectPipeline: React.FC = () => {
       if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
         return priorityOrder[a.priority] - priorityOrder[b.priority];
       }
-      
+
       // Then by status
       const statusOrder = { in_progress: 0, pending: 1, on_hold: 2, completed: 3 };
       if (statusOrder[a.status] !== statusOrder[b.status]) {
         return statusOrder[a.status] - statusOrder[b.status];
       }
-      
+
       // Finally by due date
       if (a.due_date && b.due_date) {
         return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
       }
-      
+
       return 0;
     });
 
-  const overdueProjects = sortedProjects.filter(p => 
-    p.daysUntilDue !== null && p.daysUntilDue < 0 && p.status !== 'completed'
+  const overdueProjects = sortedProjects.filter(
+    (p) => p.daysUntilDue !== null && p.daysUntilDue < 0 && p.status !== 'completed'
   );
 
-  const upcomingDeadlines = sortedProjects.filter(p => 
-    p.daysUntilDue !== null && p.daysUntilDue >= 0 && p.daysUntilDue <= 7 && p.status !== 'completed'
+  const upcomingDeadlines = sortedProjects.filter(
+    (p) =>
+      p.daysUntilDue !== null &&
+      p.daysUntilDue >= 0 &&
+      p.daysUntilDue <= 7 &&
+      p.status !== 'completed'
   );
 
   const statusCards = [
-    { 
-      label: 'In Progress', 
-      value: stats.inProgress, 
+    {
+      label: 'In Progress',
+      value: stats.inProgress,
       color: 'blue',
       percentage: stats.total > 0 ? (stats.inProgress / stats.total) * 100 : 0
     },
-    { 
-      label: 'Pending', 
-      value: stats.pending, 
+    {
+      label: 'Pending',
+      value: stats.pending,
       color: 'yellow',
       percentage: stats.total > 0 ? (stats.pending / stats.total) * 100 : 0
     },
-    { 
-      label: 'Overdue', 
-      value: stats.overdue, 
+    {
+      label: 'Overdue',
+      value: stats.overdue,
       color: 'red',
       percentage: stats.total > 0 ? (stats.overdue / stats.total) * 100 : 0
     },
-    { 
-      label: 'Completed', 
-      value: stats.completed, 
+    {
+      label: 'Completed',
+      value: stats.completed,
       color: 'emerald',
       percentage: stats.completionRate
     }
@@ -140,14 +159,13 @@ const AdvancedProjectPipeline: React.FC = () => {
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Project Pipeline</h3>
           <p className="text-sm text-gray-600 mt-1">
-            ${stats.totalValue.toLocaleString()} total value • {stats.completionRate.toFixed(0)}% completion rate
+            ${stats.totalValue.toLocaleString()} total value • {stats.completionRate.toFixed(0)}%
+            completion rate
           </p>
         </div>
         <div className="text-sm text-gray-600">
           {stats.overdue > 0 && (
-            <span className="text-red-600 font-medium">
-              {stats.overdue} overdue
-            </span>
+            <span className="text-red-600 font-medium">{stats.overdue} overdue</span>
           )}
         </div>
       </div>
@@ -159,14 +177,12 @@ const AdvancedProjectPipeline: React.FC = () => {
             <div className="text-2xl font-bold text-gray-900">{card.value}</div>
             <div className="text-sm text-gray-600 mb-2">{card.label}</div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 className={`h-2 rounded-full bg-${card.color}-500 transition-all duration-300`}
                 style={{ width: `${Math.min(card.percentage, 100)}%` }}
               ></div>
             </div>
-            <div className="text-xs text-gray-500 mt-1">
-              {card.percentage.toFixed(0)}%
-            </div>
+            <div className="text-xs text-gray-500 mt-1">{card.percentage.toFixed(0)}%</div>
           </div>
         ))}
       </div>
@@ -224,61 +240,86 @@ const AdvancedProjectPipeline: React.FC = () => {
           const statusInfo = getStatusInfo(project.status);
           const Icon = statusInfo.icon;
           const priorityColor = getPriorityColor(project.priority);
-          
+
           return (
-            <div key={project.id} className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <div
+              key={project.id}
+              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
                     <h4 className="font-medium text-gray-900">{project.name}</h4>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusInfo.bgColor} ${statusInfo.textColor}`}>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${statusInfo.bgColor} ${statusInfo.textColor}`}
+                    >
                       {project.status.replace('_', ' ')}
                     </span>
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${priorityColor}`}>
                       {project.priority} priority
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
-                    <span>Type: <span className="font-medium">{getTypeLabel(project.type)}</span></span>
+                    <span>
+                      Type: <span className="font-medium">{getTypeLabel(project.type)}</span>
+                    </span>
                     {project.amount && (
-                      <span>Value: <span className="font-medium">${project.amount.toLocaleString()}</span></span>
+                      <span>
+                        Value:{' '}
+                        <span className="font-medium">${project.amount.toLocaleString()}</span>
+                      </span>
                     )}
                     {project.due_date && (
-                      <span>Due: 
-                        <span className={`font-medium ml-1 ${
-                          project.daysUntilDue !== null && project.daysUntilDue < 0 ? 'text-red-600' : 
-                          project.daysUntilDue !== null && project.daysUntilDue < 7 ? 'text-yellow-600' : 
-                          'text-gray-900'
-                        }`}>
+                      <span>
+                        Due:
+                        <span
+                          className={`font-medium ml-1 ${
+                            project.daysUntilDue !== null && project.daysUntilDue < 0
+                              ? 'text-red-600'
+                              : project.daysUntilDue !== null && project.daysUntilDue < 7
+                                ? 'text-yellow-600'
+                                : 'text-gray-900'
+                          }`}
+                        >
                           {new Date(project.due_date).toLocaleDateString()}
                           {project.daysUntilDue !== null && (
                             <span className="ml-1">
-                              ({project.daysUntilDue > 0 ? `${project.daysUntilDue} days` : 
-                                project.daysUntilDue === 0 ? 'Today' : 'Overdue'})
+                              (
+                              {project.daysUntilDue > 0
+                                ? `${project.daysUntilDue} days`
+                                : project.daysUntilDue === 0
+                                  ? 'Today'
+                                  : 'Overdue'}
+                              )
                             </span>
                           )}
                         </span>
                       </span>
                     )}
                   </div>
-                  
+
                   {project.estimated_hours && (
                     <div className="mb-2">
                       <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
                         <span>Progress</span>
-                        <span>{project.actual_hours} / {project.estimated_hours} hours ({Math.round((project.actual_hours / project.estimated_hours) * 100)}%)</span>
+                        <span>
+                          {project.actual_hours} / {project.estimated_hours} hours (
+                          {Math.round((project.actual_hours / project.estimated_hours) * 100)}%)
+                        </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${Math.min((project.actual_hours / project.estimated_hours) * 100, 100)}%` }}
+                          style={{
+                            width: `${Math.min((project.actual_hours / project.estimated_hours) * 100, 100)}%`
+                          }}
                         ></div>
                       </div>
                     </div>
                   )}
                 </div>
-                
+
                 <div className={`p-2 rounded-lg ${statusInfo.bgColor} ml-4`}>
                   <Icon className={`w-4 h-4 text-${statusInfo.color}-600`} />
                 </div>
@@ -300,7 +341,8 @@ const AdvancedProjectPipeline: React.FC = () => {
       <div className="mt-6 pt-4 border-t border-gray-200">
         <div className="flex items-center justify-between text-sm">
           <div className="text-gray-600">
-            <span className="font-medium">${stats.averageValue.toLocaleString()}</span> average project value
+            <span className="font-medium">${stats.averageValue.toLocaleString()}</span> average
+            project value
           </div>
           <button className="text-blue-600 hover:text-blue-700 font-medium">
             View All Projects →

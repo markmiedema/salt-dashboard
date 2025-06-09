@@ -8,16 +8,17 @@ interface RetryButtonProps {
   variant?: 'primary' | 'secondary';
 }
 
-const RetryButton: React.FC<RetryButtonProps> = ({ 
-  onRetry, 
-  loading = false, 
+const RetryButton: React.FC<RetryButtonProps> = ({
+  onRetry,
+  loading = false,
   text = 'Retry',
   variant = 'secondary'
 }) => {
-  const baseClasses = "flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors disabled:opacity-50";
+  const baseClasses =
+    'flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors disabled:opacity-50';
   const variantClasses = {
-    primary: "bg-blue-600 text-white hover:bg-blue-700",
-    secondary: "bg-gray-100 text-gray-700 hover:bg-gray-200"
+    primary: 'bg-blue-600 text-white hover:bg-blue-700',
+    secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200'
   };
 
   return (

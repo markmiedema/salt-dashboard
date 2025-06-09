@@ -75,7 +75,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       onKeyDown={handleKeyDown}
       tabIndex={-1}
@@ -102,7 +102,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         {/* Content */}
         <div className="p-6">
           <p className="text-gray-700 mb-4">{message}</p>
-          
+
           {itemName && (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
               <p className="text-sm text-gray-600">Item to be affected:</p>

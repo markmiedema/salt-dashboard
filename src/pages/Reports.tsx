@@ -2,7 +2,18 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Calendar, TrendingUp, DollarSign, FileText, BarChart3 } from 'lucide-react';
 import { useRevenue, useClients, useProjects } from '../hooks/useSupabase';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
 import ExportButton from '../components/reports/ExportButton';
 
 const Reports: React.FC = () => {
@@ -15,16 +26,19 @@ const Reports: React.FC = () => {
 
   // Calculate yearly revenue trend
   const yearlyRevenue = revenue
-    .filter(r => r.year === selectedYear)
-    .reduce((acc, entry) => {
-      const monthKey = entry.month;
-      if (!acc[monthKey]) {
-        acc[monthKey] = { month: monthKey, total: 0, returns: 0, project: 0, on_call: 0 };
-      }
-      acc[monthKey].total += entry.amount;
-      acc[monthKey][entry.type] += entry.amount;
-      return acc;
-    }, {} as Record<number, any>);
+    .filter((r) => r.year === selectedYear)
+    .reduce(
+      (acc, entry) => {
+        const monthKey = entry.month;
+        if (!acc[monthKey]) {
+          acc[monthKey] = { month: monthKey, total: 0, returns: 0, project: 0, on_call: 0 };
+        }
+        acc[monthKey].total += entry.amount;
+        acc[monthKey][entry.type] += entry.amount;
+        return acc;
+      },
+      {} as Record<number, any>
+    );
 
   const chartData = Array.from({ length: 12 }, (_, i) => {
     const month = i + 1;
@@ -37,34 +51,46 @@ const Reports: React.FC = () => {
 
   // Revenue by type for pie chart
   const revenueByType = revenue
-    .filter(r => r.year === selectedYear)
-    .reduce((acc, entry) => {
-      acc[entry.type] = (acc[entry.type] || 0) + entry.amount;
-      return acc;
-    }, {} as Record<string, number>);
+    .filter((r) => r.year === selectedYear)
+    .reduce(
+      (acc, entry) => {
+        acc[entry.type] = (acc[entry.type] || 0) + entry.amount;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
   const pieData = Object.entries(revenueByType).map(([type, amount]) => ({
     name: type.charAt(0).toUpperCase() + type.slice(1).replace('_', ' '),
     value: amount,
-    percentage: ((amount / Object.values(revenueByType).reduce((a, b) => a + b, 0)) * 100).toFixed(1)
+    percentage: ((amount / Object.values(revenueByType).reduce((a, b) => a + b, 0)) * 100).toFixed(
+      1
+    )
   }));
 
   const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b'];
 
   // Key metrics
-  const totalRevenue = revenue.filter(r => r.year === selectedYear).reduce((sum, r) => sum + r.amount, 0);
-  const activeClientsCount = clients.filter(c => c.status === 'active').length;
-  const activeProjectsCount = projects.filter(p => p.status === 'in_progress').length;
-  const avgProjectValue = projects.length > 0 
-    ? projects.filter(p => p.amount).reduce((sum, p) => sum + (p.amount || 0), 0) / projects.filter(p => p.amount).length 
-    : 0;
+  const totalRevenue = revenue
+    .filter((r) => r.year === selectedYear)
+    .reduce((sum, r) => sum + r.amount, 0);
+  const activeClientsCount = clients.filter((c) => c.status === 'active').length;
+  const activeProjectsCount = projects.filter((p) => p.status === 'in_progress').length;
+  const avgProjectValue =
+    projects.length > 0
+      ? projects.filter((p) => p.amount).reduce((sum, p) => sum + (p.amount || 0), 0) /
+        projects.filter((p) => p.amount).length
+      : 0;
 
   if (loading) {
     return (
       <>
         <Helmet>
           <title>Reports & Analytics - Tax Agency Dashboard</title>
-          <meta name="description" content="Comprehensive insights into your agency's performance" />
+          <meta
+            name="description"
+            content="Comprehensive insights into your agency's performance"
+          />
         </Helmet>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="animate-pulse space-y-6">
@@ -87,12 +113,14 @@ const Reports: React.FC = () => {
         <title>Reports & Analytics - Tax Agency Dashboard</title>
         <meta name="description" content="Comprehensive insights into your agency's performance" />
       </Helmet>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Reports & Analytics</h1>
-            <p className="text-gray-600 mt-2">Comprehensive insights into your agency's performance</p>
+            <p className="text-gray-600 mt-2">
+              Comprehensive insights into your agency's performance
+            </p>
           </div>
           <div className="flex items-center space-x-4">
             <select
@@ -155,7 +183,7 @@ const Reports: React.FC = () => {
                 <p className="text-2xl font-bold text-gray-900">{activeProjectsCount}</p>
                 <div className="flex items-center mt-2 text-sm text-blue-600">
                   <FileText className="w-4 h-4 mr-1" />
-                  <span>{projects.filter(p => p.status === 'completed').length}</span>
+                  <span>{projects.filter((p) => p.status === 'completed').length}</span>
                   <span className="text-gray-500 ml-1">completed</span>
                 </div>
               </div>
@@ -169,7 +197,9 @@ const Reports: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg. Project Value</p>
-                <p className="text-2xl font-bold text-gray-900">${avgProjectValue.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  ${avgProjectValue.toLocaleString()}
+                </p>
                 <div className="flex items-center mt-2 text-sm text-orange-600">
                   <BarChart3 className="w-4 h-4 mr-1" />
                   <span>15.3%</span>
@@ -189,42 +219,40 @@ const Reports: React.FC = () => {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-gray-900">Monthly Revenue Trend</h3>
-              <div className="text-sm text-gray-600">
-                Total: ${totalRevenue.toLocaleString()}
-              </div>
+              <div className="text-sm text-gray-600">Total: ${totalRevenue.toLocaleString()}</div>
             </div>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="monthName" 
+                  <XAxis
+                    dataKey="monthName"
                     stroke="#6b7280"
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
                   />
-                  <YAxis 
+                  <YAxis
                     stroke="#6b7280"
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
                   />
-                  <Tooltip 
+                  <Tooltip
                     formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
                     labelStyle={{ color: '#374151' }}
-                    contentStyle={{ 
-                      backgroundColor: 'white', 
+                    contentStyle={{
+                      backgroundColor: 'white',
                       border: '1px solid #e5e7eb',
                       borderRadius: '8px',
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                     }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="total" 
-                    stroke="#3b82f6" 
+                  <Line
+                    type="monotone"
+                    dataKey="total"
+                    stroke="#3b82f6"
                     strokeWidth={3}
                     dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
                     activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
@@ -253,10 +281,10 @@ const Reports: React.FC = () => {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip 
+                  <Tooltip
                     formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
-                    contentStyle={{ 
-                      backgroundColor: 'white', 
+                    contentStyle={{
+                      backgroundColor: 'white',
                       border: '1px solid #e5e7eb',
                       borderRadius: '8px',
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
@@ -285,15 +313,19 @@ const Reports: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {chartData.filter(d => d.total > 0).map((month) => (
-                    <tr key={month.month} className="border-b border-gray-100">
-                      <td className="py-3 px-4 font-medium">{month.monthName}</td>
-                      <td className="py-3 px-4 text-right">${month.returns.toLocaleString()}</td>
-                      <td className="py-3 px-4 text-right">${month.project.toLocaleString()}</td>
-                      <td className="py-3 px-4 text-right">${month.on_call.toLocaleString()}</td>
-                      <td className="py-3 px-4 text-right font-semibold">${month.total.toLocaleString()}</td>
-                    </tr>
-                  ))}
+                  {chartData
+                    .filter((d) => d.total > 0)
+                    .map((month) => (
+                      <tr key={month.month} className="border-b border-gray-100">
+                        <td className="py-3 px-4 font-medium">{month.monthName}</td>
+                        <td className="py-3 px-4 text-right">${month.returns.toLocaleString()}</td>
+                        <td className="py-3 px-4 text-right">${month.project.toLocaleString()}</td>
+                        <td className="py-3 px-4 text-right">${month.on_call.toLocaleString()}</td>
+                        <td className="py-3 px-4 text-right font-semibold">
+                          ${month.total.toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
@@ -304,22 +336,29 @@ const Reports: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Client Performance</h3>
             <div className="space-y-4">
               {clients.slice(0, 5).map((client, index) => {
-                const clientProjects = projects.filter(p => p.client_id === client.id);
+                const clientProjects = projects.filter((p) => p.client_id === client.id);
                 const totalValue = clientProjects.reduce((sum, p) => sum + (p.amount || 0), 0);
-                
+
                 return (
-                  <div key={client.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={client.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-medium text-sm">
                         {index + 1}
                       </div>
                       <div>
                         <div className="font-medium text-gray-900">{client.name}</div>
-                        <div className="text-sm text-gray-600">{clientProjects.length} project{clientProjects.length !== 1 ? 's' : ''}</div>
+                        <div className="text-sm text-gray-600">
+                          {clientProjects.length} project{clientProjects.length !== 1 ? 's' : ''}
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold text-gray-900">${totalValue.toLocaleString()}</div>
+                      <div className="font-semibold text-gray-900">
+                        ${totalValue.toLocaleString()}
+                      </div>
                       <div className="text-sm text-gray-600">{client.status}</div>
                     </div>
                   </div>
@@ -336,8 +375,9 @@ const Reports: React.FC = () => {
             <div>
               <h4 className="text-sm font-medium text-blue-900">Export Options</h4>
               <p className="text-sm text-blue-700 mt-1">
-                Export comprehensive reports in PDF format for presentations or Excel format for detailed data analysis. 
-                Reports include all metrics, charts, and detailed breakdowns for the selected year.
+                Export comprehensive reports in PDF format for presentations or Excel format for
+                detailed data analysis. Reports include all metrics, charts, and detailed breakdowns
+                for the selected year.
               </p>
             </div>
           </div>

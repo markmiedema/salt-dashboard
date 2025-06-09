@@ -26,11 +26,26 @@ const ProjectPipeline: React.FC<ProjectPipelineProps> = ({ projects, loading }) 
   const getStatusInfo = (status: Project['status']) => {
     switch (status) {
       case 'pending':
-        return { icon: Clock, color: 'yellow', bgColor: 'bg-yellow-100', textColor: 'text-yellow-800' };
+        return {
+          icon: Clock,
+          color: 'yellow',
+          bgColor: 'bg-yellow-100',
+          textColor: 'text-yellow-800'
+        };
       case 'in_progress':
-        return { icon: AlertCircle, color: 'blue', bgColor: 'bg-blue-100', textColor: 'text-blue-800' };
+        return {
+          icon: AlertCircle,
+          color: 'blue',
+          bgColor: 'bg-blue-100',
+          textColor: 'text-blue-800'
+        };
       case 'completed':
-        return { icon: CheckCircle, color: 'emerald', bgColor: 'bg-emerald-100', textColor: 'text-emerald-800' };
+        return {
+          icon: CheckCircle,
+          color: 'emerald',
+          bgColor: 'bg-emerald-100',
+          textColor: 'text-emerald-800'
+        };
       case 'on_hold':
         return { icon: Pause, color: 'gray', bgColor: 'bg-gray-100', textColor: 'text-gray-800' };
       default:
@@ -40,11 +55,11 @@ const ProjectPipeline: React.FC<ProjectPipelineProps> = ({ projects, loading }) 
 
   const getTypeLabel = (type: Project['type']) => {
     const labels = {
-      'nexus_analysis': 'Nexus Analysis',
-      'vda': 'VDA',
-      'tax_prep': 'Tax Preparation',
-      'bookkeeping': 'Bookkeeping',
-      'advisory': 'Advisory'
+      nexus_analysis: 'Nexus Analysis',
+      vda: 'VDA',
+      tax_prep: 'Tax Preparation',
+      bookkeeping: 'Bookkeeping',
+      advisory: 'Advisory'
     };
     return labels[type] || type;
   };
@@ -58,28 +73,30 @@ const ProjectPipeline: React.FC<ProjectPipelineProps> = ({ projects, loading }) 
     return diffDays;
   };
 
-  const sortedProjects = projects
-    .sort((a, b) => {
-      // Sort by status priority, then by due date
-      const statusPriority = { 'in_progress': 1, 'pending': 2, 'on_hold': 3, 'completed': 4 };
-      const aPriority = statusPriority[a.status] || 5;
-      const bPriority = statusPriority[b.status] || 5;
-      
-      if (aPriority !== bPriority) {
-        return aPriority - bPriority;
-      }
-      
-      if (a.due_date && b.due_date) {
-        return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
-      }
-      
-      return 0;
-    });
+  const sortedProjects = projects.sort((a, b) => {
+    // Sort by status priority, then by due date
+    const statusPriority = { in_progress: 1, pending: 2, on_hold: 3, completed: 4 };
+    const aPriority = statusPriority[a.status] || 5;
+    const bPriority = statusPriority[b.status] || 5;
 
-  const statusCounts = projects.reduce((acc, project) => {
-    acc[project.status] = (acc[project.status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
+    }
+
+    if (a.due_date && b.due_date) {
+      return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+    }
+
+    return 0;
+  });
+
+  const statusCounts = projects.reduce(
+    (acc, project) => {
+      acc[project.status] = (acc[project.status] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -102,18 +119,23 @@ const ProjectPipeline: React.FC<ProjectPipelineProps> = ({ projects, loading }) 
           const statusInfo = getStatusInfo(project.status);
           const Icon = statusInfo.icon;
           const daysUntilDue = getDaysUntilDue(project.due_date);
-          
+
           return (
-            <div key={project.id} className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <div
+              key={project.id}
+              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
                     <h4 className="font-medium text-gray-900">{project.name}</h4>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusInfo.bgColor} ${statusInfo.textColor}`}>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${statusInfo.bgColor} ${statusInfo.textColor}`}
+                    >
                       {project.status.replace('_', ' ')}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center space-x-4 text-sm text-gray-600">
                     <span className="flex items-center space-x-1">
                       <span>Type:</span>
@@ -128,11 +150,15 @@ const ProjectPipeline: React.FC<ProjectPipelineProps> = ({ projects, loading }) 
                     {project.due_date && (
                       <span className="flex items-center space-x-1">
                         <span>Due:</span>
-                        <span className={`font-medium ${
-                          daysUntilDue !== null && daysUntilDue < 7 ? 'text-red-600' : 
-                          daysUntilDue !== null && daysUntilDue < 14 ? 'text-yellow-600' : 
-                          'text-gray-900'
-                        }`}>
+                        <span
+                          className={`font-medium ${
+                            daysUntilDue !== null && daysUntilDue < 7
+                              ? 'text-red-600'
+                              : daysUntilDue !== null && daysUntilDue < 14
+                                ? 'text-yellow-600'
+                                : 'text-gray-900'
+                          }`}
+                        >
                           {new Date(project.due_date).toLocaleDateString()}
                           {daysUntilDue !== null && (
                             <span className="ml-1">
@@ -144,22 +170,26 @@ const ProjectPipeline: React.FC<ProjectPipelineProps> = ({ projects, loading }) 
                     )}
                   </div>
                 </div>
-                
+
                 <div className={`p-2 rounded-lg ${statusInfo.bgColor}`}>
                   <Icon className={`w-4 h-4 text-${statusInfo.color}-600`} />
                 </div>
               </div>
-              
+
               {project.estimated_hours && (
                 <div className="mt-3">
                   <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
                     <span>Progress</span>
-                    <span>{project.actual_hours} / {project.estimated_hours} hours</span>
+                    <span>
+                      {project.actual_hours} / {project.estimated_hours} hours
+                    </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.min((project.actual_hours / project.estimated_hours) * 100, 100)}%` }}
+                      style={{
+                        width: `${Math.min((project.actual_hours / project.estimated_hours) * 100, 100)}%`
+                      }}
                     ></div>
                   </div>
                 </div>

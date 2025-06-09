@@ -37,53 +37,70 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const removeToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 
-  const addToast = useCallback((toast: Omit<Toast, 'id'>) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    const newToast: Toast = {
-      ...toast,
-      id,
-      duration: toast.duration ?? 5000
-    };
+  const addToast = useCallback(
+    (toast: Omit<Toast, 'id'>) => {
+      const id = Math.random().toString(36).substr(2, 9);
+      const newToast: Toast = {
+        ...toast,
+        id,
+        duration: toast.duration ?? 5000
+      };
 
-    setToasts(prev => [...prev, newToast]);
+      setToasts((prev) => [...prev, newToast]);
 
-    // Auto-remove toast after duration
-    if (newToast.duration > 0) {
-      setTimeout(() => {
-        removeToast(id);
-      }, newToast.duration);
-    }
-  }, [removeToast]);
+      // Auto-remove toast after duration
+      if (newToast.duration > 0) {
+        setTimeout(() => {
+          removeToast(id);
+        }, newToast.duration);
+      }
+    },
+    [removeToast]
+  );
 
-  const success = useCallback((title: string, message?: string) => {
-    addToast({ type: 'success', title, message });
-  }, [addToast]);
+  const success = useCallback(
+    (title: string, message?: string) => {
+      addToast({ type: 'success', title, message });
+    },
+    [addToast]
+  );
 
-  const error = useCallback((title: string, message?: string) => {
-    addToast({ type: 'error', title, message, duration: 7000 });
-  }, [addToast]);
+  const error = useCallback(
+    (title: string, message?: string) => {
+      addToast({ type: 'error', title, message, duration: 7000 });
+    },
+    [addToast]
+  );
 
-  const warning = useCallback((title: string, message?: string) => {
-    addToast({ type: 'warning', title, message });
-  }, [addToast]);
+  const warning = useCallback(
+    (title: string, message?: string) => {
+      addToast({ type: 'warning', title, message });
+    },
+    [addToast]
+  );
 
-  const info = useCallback((title: string, message?: string) => {
-    addToast({ type: 'info', title, message });
-  }, [addToast]);
+  const info = useCallback(
+    (title: string, message?: string) => {
+      addToast({ type: 'info', title, message });
+    },
+    [addToast]
+  );
 
   return (
-    <ToastContext.Provider value={{
-      toasts,
-      addToast,
-      removeToast,
-      success,
-      error,
-      warning,
-      info
-    }}>
+    <ToastContext.Provider
+      value={{
+        toasts,
+        addToast,
+        removeToast,
+        success,
+        error,
+        warning,
+        info
+      }}
+    >
       {children}
       <ToastContainer />
     </ToastContext.Provider>
@@ -104,7 +121,10 @@ const ToastContainer: React.FC = () => {
   );
 };
 
-const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({ toast, onRemove }) => {
+const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
+  toast,
+  onRemove
+}) => {
   const getToastConfig = (type: Toast['type']) => {
     switch (type) {
       case 'success':
@@ -150,18 +170,16 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
   const Icon = config.icon;
 
   return (
-    <div className={`${config.bgColor} ${config.borderColor} border rounded-lg shadow-lg p-4 animate-in slide-in-from-right-full duration-300`}>
+    <div
+      className={`${config.bgColor} ${config.borderColor} border rounded-lg shadow-lg p-4 animate-in slide-in-from-right-full duration-300`}
+    >
       <div className="flex items-start space-x-3">
         <Icon className={`w-5 h-5 ${config.iconColor} mt-0.5 flex-shrink-0`} />
-        
+
         <div className="flex-1 min-w-0">
-          <h4 className={`text-sm font-medium ${config.titleColor}`}>
-            {toast.title}
-          </h4>
+          <h4 className={`text-sm font-medium ${config.titleColor}`}>{toast.title}</h4>
           {toast.message && (
-            <p className={`text-sm mt-1 ${config.messageColor}`}>
-              {toast.message}
-            </p>
+            <p className={`text-sm mt-1 ${config.messageColor}`}>{toast.message}</p>
           )}
           {toast.action && (
             <button

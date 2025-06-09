@@ -67,7 +67,7 @@ export class RevenueService {
     }
 
     const { data, error } = await query;
-    
+
     if (error) {
       console.error('Error fetching revenue:', error);
       throw new Error(`Failed to fetch revenue: ${error.message}`);
@@ -79,10 +79,12 @@ export class RevenueService {
   static async create(revenue: Omit<RevenueEntry, 'id' | 'created_at'>): Promise<RevenueEntry> {
     const { data, error } = await supabase
       .from('revenue_entries')
-      .insert([{
-        ...revenue,
-        created_at: new Date().toISOString()
-      }])
+      .insert([
+        {
+          ...revenue,
+          created_at: new Date().toISOString()
+        }
+      ])
       .select()
       .single();
 
@@ -109,10 +111,7 @@ export class RevenueService {
   }
 
   static async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('revenue_entries')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('revenue_entries').delete().eq('id', id);
 
     if (error) {
       throw new Error(`Failed to delete revenue entry: ${error.message}`);
@@ -129,40 +128,45 @@ export class RevenueService {
     const allRevenue = await this.getAll();
 
     const currentMonthRevenue = allRevenue
-      .filter(r => r.month === currentMonth && r.year === currentYear)
+      .filter((r) => r.month === currentMonth && r.year === currentYear)
       .reduce((sum, r) => sum + r.amount, 0);
 
     const lastMonthRevenue = allRevenue
-      .filter(r => r.month === lastMonth && r.year === lastMonthYear)
+      .filter((r) => r.month === lastMonth && r.year === lastMonthYear)
       .reduce((sum, r) => sum + r.amount, 0);
 
     const yearToDateRevenue = allRevenue
-      .filter(r => r.year === currentYear)
+      .filter((r) => r.year === currentYear)
       .reduce((sum, r) => sum + r.amount, 0);
 
     const lastYearRevenue = allRevenue
-      .filter(r => r.year === currentYear - 1)
+      .filter((r) => r.year === currentYear - 1)
       .reduce((sum, r) => sum + r.amount, 0);
 
-    const monthlyGrowth = lastMonthRevenue > 0 
-      ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 
-      : 0;
+    const monthlyGrowth =
+      lastMonthRevenue > 0
+        ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
+        : 0;
 
-    const yearlyGrowth = lastYearRevenue > 0 
-      ? ((yearToDateRevenue - lastYearRevenue) / lastYearRevenue) * 100 
-      : 0;
+    const yearlyGrowth =
+      lastYearRevenue > 0 ? ((yearToDateRevenue - lastYearRevenue) / lastYearRevenue) * 100 : 0;
 
     const monthsWithRevenue = allRevenue
-      .filter(r => r.year === currentYear)
-      .reduce((acc, r) => {
-        const key = r.month;
-        acc[key] = (acc[key] || 0) + r.amount;
-        return acc;
-      }, {} as Record<number, number>);
+      .filter((r) => r.year === currentYear)
+      .reduce(
+        (acc, r) => {
+          const key = r.month;
+          acc[key] = (acc[key] || 0) + r.amount;
+          return acc;
+        },
+        {} as Record<number, number>
+      );
 
-    const averageMonthly = Object.keys(monthsWithRevenue).length > 0 
-      ? Object.values(monthsWithRevenue).reduce((sum, val) => sum + val, 0) / Object.keys(monthsWithRevenue).length
-      : 0;
+    const averageMonthly =
+      Object.keys(monthsWithRevenue).length > 0
+        ? Object.values(monthsWithRevenue).reduce((sum, val) => sum + val, 0) /
+          Object.keys(monthsWithRevenue).length
+        : 0;
 
     const projectedYearly = averageMonthly * 12;
     const targetProgress = targetMonthly > 0 ? (currentMonthRevenue / targetMonthly) * 100 : 0;
@@ -184,10 +188,13 @@ export class RevenueService {
     const currentYear = year || new Date().getFullYear();
     const revenue = await this.getAll({ year: currentYear });
 
-    return revenue.reduce((acc, entry) => {
-      acc[entry.type] = (acc[entry.type] || 0) + entry.amount;
-      return acc;
-    }, { returns: 0, project: 0, on_call: 0 } as RevenueByType);
+    return revenue.reduce(
+      (acc, entry) => {
+        acc[entry.type] = (acc[entry.type] || 0) + entry.amount;
+        return acc;
+      },
+      { returns: 0, project: 0, on_call: 0 } as RevenueByType
+    );
   }
 
   static async getMonthlyTrends(year?: number, months: number = 12): Promise<MonthlyRevenue[]> {
@@ -195,15 +202,15 @@ export class RevenueService {
     const revenue = await this.getAll();
 
     // Get data for current year and previous year for growth calculation
-    const currentYearData = revenue.filter(r => r.year === currentYear);
-    const previousYearData = revenue.filter(r => r.year === currentYear - 1);
+    const currentYearData = revenue.filter((r) => r.year === currentYear);
+    const previousYearData = revenue.filter((r) => r.year === currentYear - 1);
 
     const monthlyData: MonthlyRevenue[] = [];
 
     for (let i = 0; i < months; i++) {
       const month = i + 1;
-      const monthRevenue = currentYearData.filter(r => r.month === month);
-      const previousYearMonth = previousYearData.filter(r => r.month === month);
+      const monthRevenue = currentYearData.filter((r) => r.month === month);
+      const previousYearMonth = previousYearData.filter((r) => r.month === month);
 
       const total = monthRevenue.reduce((sum, r) => sum + r.amount, 0);
       const previousTotal = previousYearMonth.reduce((sum, r) => sum + r.amount, 0);
@@ -214,9 +221,15 @@ export class RevenueService {
         year: currentYear,
         monthName: new Date(currentYear, month - 1).toLocaleDateString('en-US', { month: 'short' }),
         total,
-        returns: monthRevenue.filter(r => r.type === 'returns').reduce((sum, r) => sum + r.amount, 0),
-        project: monthRevenue.filter(r => r.type === 'project').reduce((sum, r) => sum + r.amount, 0),
-        on_call: monthRevenue.filter(r => r.type === 'on_call').reduce((sum, r) => sum + r.amount, 0),
+        returns: monthRevenue
+          .filter((r) => r.type === 'returns')
+          .reduce((sum, r) => sum + r.amount, 0),
+        project: monthRevenue
+          .filter((r) => r.type === 'project')
+          .reduce((sum, r) => sum + r.amount, 0),
+        on_call: monthRevenue
+          .filter((r) => r.type === 'on_call')
+          .reduce((sum, r) => sum + r.amount, 0),
         growth
       };
 
@@ -244,12 +257,14 @@ export class RevenueService {
       const forecastYear = forecastMonth > 12 ? currentYear + 1 : currentYear;
       const adjustedMonth = forecastMonth > 12 ? forecastMonth - 12 : forecastMonth;
 
-      const projectedTotal = averageMonthly * (1 + (averageGrowth / 100));
+      const projectedTotal = averageMonthly * (1 + averageGrowth / 100);
 
       forecast.push({
         month: adjustedMonth,
         year: forecastYear,
-        monthName: new Date(forecastYear, adjustedMonth - 1).toLocaleDateString('en-US', { month: 'short' }),
+        monthName: new Date(forecastYear, adjustedMonth - 1).toLocaleDateString('en-US', {
+          month: 'short'
+        }),
         total: projectedTotal,
         returns: projectedTotal * 0.6, // Estimated distribution
         project: projectedTotal * 0.3,

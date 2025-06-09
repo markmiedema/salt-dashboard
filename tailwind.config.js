@@ -6,7 +6,7 @@ export default {
     { pattern: /(text)-(blue|emerald|purple|orange)-600/ }
   ],
   theme: {
-    extend: {},
+    extend: {}
   },
-  plugins: [],
+  plugins: []
 };

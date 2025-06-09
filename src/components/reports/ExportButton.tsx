@@ -31,17 +31,26 @@ const ExportButton: React.FC<ExportButtonProps> = ({
 
     try {
       const exportData = ExportService.prepareExportData(clients, projects, revenue, selectedYear);
-      
+
       if (type === 'pdf') {
         await ExportService.exportToPDF(exportData);
-        success('PDF Export Complete', `Your ${selectedYear} tax agency report has been downloaded successfully.`);
+        success(
+          'PDF Export Complete',
+          `Your ${selectedYear} tax agency report has been downloaded successfully.`
+        );
       } else {
         await ExportService.exportToExcel(exportData);
-        success('Excel Export Complete', `Your comprehensive ${selectedYear} data analysis has been downloaded successfully.`);
+        success(
+          'Excel Export Complete',
+          `Your comprehensive ${selectedYear} data analysis has been downloaded successfully.`
+        );
       }
     } catch (exportError) {
       console.error('Export failed:', exportError);
-      error('Export Failed', `There was an error generating your ${type.toUpperCase()} report. Please try again.`);
+      error(
+        'Export Failed',
+        `There was an error generating your ${type.toUpperCase()} report. Please try again.`
+      );
     } finally {
       setIsExporting(false);
       setExportType(null);
@@ -60,12 +69,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         ) : (
           <Download className="w-4 h-4" />
         )}
-        <span>
-          {isExporting 
-            ? `Exporting ${exportType?.toUpperCase()}...` 
-            : 'Export Report'
-          }
-        </span>
+        <span>{isExporting ? `Exporting ${exportType?.toUpperCase()}...` : 'Export Report'}</span>
       </button>
 
       {showDropdown && !isExporting && (
@@ -81,7 +85,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
                 <div className="text-xs text-gray-500">Professional report format</div>
               </div>
             </button>
-            
+
             <button
               onClick={() => handleExport('excel')}
               className="flex items-center space-x-3 w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors"
@@ -97,12 +101,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
       )}
 
       {/* Overlay to close dropdown */}
-      {showDropdown && (
-        <div 
-          className="fixed inset-0 z-0" 
-          onClick={() => setShowDropdown(false)}
-        />
-      )}
+      {showDropdown && <div className="fixed inset-0 z-0" onClick={() => setShowDropdown(false)} />}
     </div>
   );
 };

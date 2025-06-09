@@ -24,30 +24,30 @@ export function useConfirmation() {
     onConfirm: () => {}
   });
 
-  const showConfirmation = useCallback((
-    options: ConfirmationOptions,
-    onConfirm: () => Promise<void> | void
-  ) => {
-    setState({
-      ...options,
-      isOpen: true,
-      isLoading: false,
-      onConfirm: async () => {
-        setState(prev => ({ ...prev, isLoading: true }));
-        try {
-          await onConfirm();
-          setState(prev => ({ ...prev, isOpen: false, isLoading: false }));
-        } catch (error) {
-          setState(prev => ({ ...prev, isLoading: false }));
-          throw error;
+  const showConfirmation = useCallback(
+    (options: ConfirmationOptions, onConfirm: () => Promise<void> | void) => {
+      setState({
+        ...options,
+        isOpen: true,
+        isLoading: false,
+        onConfirm: async () => {
+          setState((prev) => ({ ...prev, isLoading: true }));
+          try {
+            await onConfirm();
+            setState((prev) => ({ ...prev, isOpen: false, isLoading: false }));
+          } catch (error) {
+            setState((prev) => ({ ...prev, isLoading: false }));
+            throw error;
+          }
         }
-      }
-    });
-  }, []);
+      });
+    },
+    []
+  );
 
   const hideConfirmation = useCallback(() => {
     if (!state.isLoading) {
-      setState(prev => ({ ...prev, isOpen: false }));
+      setState((prev) => ({ ...prev, isOpen: false }));
     }
   }, [state.isLoading]);
 

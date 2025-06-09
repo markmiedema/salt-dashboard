@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Plus, Search, Building, User, Mail, Phone, Filter, Users, Edit, Trash2 } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Building,
+  User,
+  Mail,
+  Phone,
+  Filter,
+  Users,
+  Edit,
+  Trash2
+} from 'lucide-react';
 import { useClients } from '../hooks/useSupabase';
 import { Client } from '../types/database';
 import ClientModal from '../components/forms/ClientModal';
@@ -16,13 +27,14 @@ const Clients: React.FC = () => {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const { confirmationState, showConfirmation, hideConfirmation } = useConfirmation();
 
-  const filteredClients = clients.filter(client => {
-    const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (client.email?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                         false;
+  const filteredClients = clients.filter((client) => {
+    const matchesSearch =
+      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      false;
     const matchesStatus = statusFilter === 'all' || client.status === statusFilter;
     const matchesType = typeFilter === 'all' || client.entity_type === typeFilter;
-    
+
     return matchesSearch && matchesStatus && matchesType;
   });
 
@@ -49,7 +61,9 @@ const Clients: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleSubmitClient = async (clientData: Omit<Client, 'id' | 'created_at' | 'updated_at'>) => {
+  const handleSubmitClient = async (
+    clientData: Omit<Client, 'id' | 'created_at' | 'updated_at'>
+  ) => {
     if (editingClient) {
       await updateClient(editingClient.id, clientData);
     } else {
@@ -61,7 +75,8 @@ const Clients: React.FC = () => {
     showConfirmation(
       {
         title: 'Delete Client',
-        message: 'Are you sure you want to delete this client? This action will permanently remove the client and all associated data.',
+        message:
+          'Are you sure you want to delete this client? This action will permanently remove the client and all associated data.',
         confirmText: 'Delete Client',
         cancelText: 'Cancel',
         type: 'danger',
@@ -101,14 +116,14 @@ const Clients: React.FC = () => {
         <title>Clients - Tax Agency Dashboard</title>
         <meta name="description" content="Manage your client relationships and contacts" />
       </Helmet>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Clients</h1>
             <p className="text-gray-600 mt-2">Manage your client relationships and contacts</p>
           </div>
-          <button 
+          <button
             onClick={handleAddClient}
             className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
@@ -171,33 +186,37 @@ const Clients: React.FC = () => {
               {filteredClients.length} Client{filteredClients.length !== 1 ? 's' : ''}
             </h2>
           </div>
-          
+
           <div className="divide-y divide-gray-200">
             {filteredClients.map((client) => (
               <div key={client.id} className="p-6 hover:bg-gray-50 transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-4">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${
-                      client.entity_type === 'business' ? 'bg-purple-500' : 'bg-blue-500'
-                    }`}>
+                    <div
+                      className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${
+                        client.entity_type === 'business' ? 'bg-purple-500' : 'bg-blue-500'
+                      }`}
+                    >
                       {client.entity_type === 'business' ? (
                         <Building className="w-6 h-6" />
                       ) : (
                         <User className="w-6 h-6" />
                       )}
                     </div>
-                    
+
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
                         <h3 className="text-lg font-semibold text-gray-900">{client.name}</h3>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(client.status)}`}>
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(client.status)}`}
+                        >
                           {client.status}
                         </span>
                         <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full">
                           {client.entity_type}
                         </span>
                       </div>
-                      
+
                       <div className="flex items-center space-x-6 text-sm text-gray-600">
                         {client.email && (
                           <div className="flex items-center space-x-2">
@@ -212,26 +231,24 @@ const Clients: React.FC = () => {
                           </div>
                         )}
                       </div>
-                      
-                      {client.notes && (
-                        <p className="text-sm text-gray-600 mt-2">{client.notes}</p>
-                      )}
-                      
+
+                      {client.notes && <p className="text-sm text-gray-600 mt-2">{client.notes}</p>}
+
                       <div className="text-xs text-gray-500 mt-2">
                         Added {new Date(client.created_at).toLocaleDateString()}
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
-                    <button 
+                    <button
                       onClick={() => handleEditClient(client)}
                       className="flex items-center space-x-1 px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                     >
                       <Edit className="w-4 h-4" />
                       <span>Edit</span>
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleDeleteClient(client)}
                       className="flex items-center space-x-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     >
@@ -251,8 +268,7 @@ const Clients: React.FC = () => {
               <p className="text-sm text-gray-400">
                 {searchTerm || statusFilter !== 'all' || typeFilter !== 'all'
                   ? 'Try adjusting your search or filters'
-                  : 'Add your first client to get started'
-                }
+                  : 'Add your first client to get started'}
               </p>
             </div>
           )}
