@@ -1,5 +1,4 @@
 import * as microsoftTeams from '@microsoft/teams-js';
-import { useToast } from '../contexts/ToastContext';
 
 export class TeamsService {
   private static isInitialized = false;

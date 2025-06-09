@@ -1,16 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '../types/database';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
+// In development we allow falling back to mock data; in production we fail fast.
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase configuration missing. Using mock data for development.');
+  if (import.meta.env.DEV) {
+    console.warn('Supabase environment variables are missing. Falling back to mock data service.');
+  } else {
+    throw new Error('Supabase environment variables VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are required in production.');
+  }
 }
 
 export const supabase = createClient<Database>(
-  supabaseUrl || 'https://xvrcmyfserdmcsbrbutf.supabase.co',
-  supabaseAnonKey || 'placeholder-key'
+  supabaseUrl ?? 'http://localhost',
+  supabaseAnonKey ?? 'public-anon-key'
 );
 
 // Mock data service for development without Supabase

@@ -45,13 +45,13 @@ function App() {
             <Header />
             <main>
               <Routes>
-                <Route path="/" element={<Navigate to="/dashboard\" replace />} />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<EnhancedDashboard />} />
                 <Route path="/clients" element={<Clients />} />
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/reports" element={<Reports />} />
                 {/* Catch-all route for 404s */}
-                <Route path="*" element={<Navigate to="/dashboard\" replace />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </main>
           </div>
