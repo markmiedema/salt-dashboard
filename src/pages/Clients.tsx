@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useNavigate } from 'react-router-dom';
 import {
   Plus,
   Search,
@@ -10,7 +11,8 @@ import {
   Filter,
   Users,
   Edit,
-  Trash2
+  Trash2,
+  Eye
 } from 'lucide-react';
 import { useClients } from '../hooks/useSupabase';
 import { Client } from '../types/database';
@@ -19,6 +21,7 @@ import ConfirmationModal from '../components/common/ConfirmationModal';
 import { useConfirmation } from '../hooks/useConfirmation';
 
 const Clients: React.FC = () => {
+  const navigate = useNavigate();
   const { clients, loading, addClient, updateClient, deleteClient } = useClients();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -59,6 +62,10 @@ const Clients: React.FC = () => {
   const handleEditClient = (client: Client) => {
     setEditingClient(client);
     setIsModalOpen(true);
+  };
+
+  const handleViewClient = (client: Client) => {
+    navigate(`/clients/${client.id}`);
   };
 
   const handleSubmitClient = async (
@@ -241,6 +248,13 @@ const Clients: React.FC = () => {
                   </div>
 
                   <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handleViewClient(client)}
+                      className="flex items-center space-x-1 px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <Eye className="w-4 h-4" />
+                      <span>View</span>
+                    </button>
                     <button
                       onClick={() => handleEditClient(client)}
                       className="flex items-center space-x-1 px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"

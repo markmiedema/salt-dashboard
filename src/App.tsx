@@ -3,7 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Header from './components/common/Header';
 import EnhancedDashboard from './pages/EnhancedDashboard';
 import Clients from './pages/Clients';
+import ClientDetail from './pages/ClientDetail';
 import Projects from './pages/Projects';
+import ProjectDetail from './pages/ProjectDetail';
 import Reports from './pages/Reports';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { ToastProvider } from './contexts/ToastContext';
@@ -48,7 +50,9 @@ function App() {
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<EnhancedDashboard />} />
                 <Route path="/clients" element={<Clients />} />
+                <Route path="/clients/:id" element={<ClientDetail />} />
                 <Route path="/projects" element={<Projects />} />
+                <Route path="/projects/:id" element={<ProjectDetail />} />
                 <Route path="/reports" element={<Reports />} />
                 {/* Catch-all route for 404s */}
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />

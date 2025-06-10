@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useNavigate } from 'react-router-dom';
 import {
   Plus,
   Search,
@@ -9,7 +10,8 @@ import {
   Pause,
   Filter,
   Edit,
-  Trash2
+  Trash2,
+  Eye
 } from 'lucide-react';
 import { useProjects, useClients } from '../hooks/useSupabase';
 import { Project } from '../types/database';
@@ -18,6 +20,7 @@ import ConfirmationModal from '../components/common/ConfirmationModal';
 import { useConfirmation } from '../hooks/useConfirmation';
 
 const Projects: React.FC = () => {
+  const navigate = useNavigate();
   const {
     projects,
     loading: projectsLoading,
@@ -106,6 +109,10 @@ const Projects: React.FC = () => {
   const handleEditProject = (project: Project) => {
     setEditingProject(project);
     setIsModalOpen(true);
+  };
+
+  const handleViewProject = (project: Project) => {
+    navigate(`/projects/${project.id}`);
   };
 
   const handleSubmitProject = async (
@@ -249,7 +256,7 @@ const Projects: React.FC = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-3">
-                        <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
+                        <h4 className="text-lg font-medium text-gray-900">{project.name}</h4>
                         <span
                           className={`px-2 py-1 text-xs font-medium rounded-full ${statusInfo.bgColor} ${statusInfo.textColor}`}
                         >
@@ -329,6 +336,13 @@ const Projects: React.FC = () => {
                         <Icon className={`w-5 h-5 text-${statusInfo.color}-600`} />
                       </div>
                       <div className="flex flex-col space-y-2">
+                        <button
+                          onClick={() => handleViewProject(project)}
+                          className="flex items-center space-x-1 px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          <Eye className="w-4 h-4" />
+                          <span>View</span>
+                        </button>
                         <button
                           onClick={() => handleEditProject(project)}
                           className="flex items-center space-x-1 px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
