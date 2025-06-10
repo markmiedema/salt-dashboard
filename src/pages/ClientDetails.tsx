@@ -116,7 +116,7 @@ const ClientDetails: React.FC = () => {
   if (projectId) {
     return (
       <Routes>
-        <Route path="projects/:projectId" element={<ProjectDetail />} />
+        <Route path="projects/:projectId\" element={<ProjectDetail />} />
       </Routes>
     );
   }

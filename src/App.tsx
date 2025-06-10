@@ -47,7 +47,7 @@ function App() {
             <Header />
             <main>
               <Routes>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/" element={<Navigate to="/dashboard\" replace />} />
                 <Route path="/dashboard" element={<EnhancedDashboard />} />
                 <Route path="/clients" element={<Clients />} />
                 <Route path="/clients/:clientId" element={<ClientDetails />} />
@@ -55,11 +55,11 @@ function App() {
                 <Route path="/reports" element={<Reports />} />
                 
                 {/* Legacy project routes - redirect to new structure */}
-                <Route path="/projects" element={<Navigate to="/clients" replace />} />
+                <Route path="/projects" element={<Navigate to="/clients\" replace />} />
                 <Route path="/projects/:projectId" element={<ProjectRedirect />} />
                 
                 {/* Catch-all route for 404s */}
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                <Route path="*" element={<Navigate to="/dashboard\" replace />} />
               </Routes>
             </main>
           </div>
