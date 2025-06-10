@@ -3,10 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Header from './components/common/Header';
 import EnhancedDashboard from './pages/EnhancedDashboard';
 import Clients from './pages/Clients';
-import ClientDetail from './pages/ClientDetail';
-import Projects from './pages/Projects';
+import ClientDetails from './pages/ClientDetails';
 import ProjectDetail from './pages/ProjectDetail';
 import Reports from './pages/Reports';
+import ProjectRedirect from './components/ProjectRedirect';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { ToastProvider } from './contexts/ToastContext';
 import { TeamsService } from './services/teamsService';
@@ -47,15 +47,19 @@ function App() {
             <Header />
             <main>
               <Routes>
-                <Route path="/" element={<Navigate to="/dashboard\" replace />} />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<EnhancedDashboard />} />
                 <Route path="/clients" element={<Clients />} />
-                <Route path="/clients/:id" element={<ClientDetail />} />
-                <Route path="/projects" element={<Projects />} />
-                <Route path="/projects/:id" element={<ProjectDetail />} />
+                <Route path="/clients/:clientId" element={<ClientDetails />} />
+                <Route path="/clients/:clientId/projects/:projectId" element={<ProjectDetail />} />
                 <Route path="/reports" element={<Reports />} />
+                
+                {/* Legacy project routes - redirect to new structure */}
+                <Route path="/projects" element={<Navigate to="/clients" replace />} />
+                <Route path="/projects/:projectId" element={<ProjectRedirect />} />
+                
                 {/* Catch-all route for 404s */}
-                <Route path="*" element={<Navigate to="/dashboard\" replace />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </main>
           </div>
