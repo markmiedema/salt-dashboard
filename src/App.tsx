@@ -47,7 +47,7 @@ function App() {
             <Header />
             <main>
               <Routes>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/" element={<Navigate to="/dashboard\" replace />} />
                 <Route path="/dashboard" element={<EnhancedDashboard />} />
                 <Route path="/clients" element={<Clients />} />
                 <Route path="/clients/:id" element={<ClientDetail />} />
@@ -55,7 +55,7 @@ function App() {
                 <Route path="/projects/:id" element={<ProjectDetail />} />
                 <Route path="/reports" element={<Reports />} />
                 {/* Catch-all route for 404s */}
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                <Route path="*" element={<Navigate to="/dashboard\" replace />} />
               </Routes>
             </main>
           </div>
