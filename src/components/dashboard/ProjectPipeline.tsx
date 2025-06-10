@@ -1,6 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Clock, CheckCircle, AlertCircle, Pause } from 'lucide-react';
 import { Project } from '../../types/database';
+import { getClientProjectUrl } from '../../utils/navigation';
 
 interface ProjectPipelineProps {
   projects: Project[];
@@ -8,6 +10,8 @@ interface ProjectPipelineProps {
 }
 
 const ProjectPipeline: React.FC<ProjectPipelineProps> = ({ projects, loading }) => {
+  const navigate = useNavigate();
+
   if (loading) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -73,6 +77,10 @@ const ProjectPipeline: React.FC<ProjectPipelineProps> = ({ projects, loading }) 
     return diffDays;
   };
 
+  const handleProjectClick = (project: Project) => {
+    navigate(getClientProjectUrl(project.client_id, project.id));
+  };
+
   const sortedProjects = projects.sort((a, b) => {
     // Sort by status priority, then by due date
     const statusPriority = { in_progress: 1, pending: 2, on_hold: 3, completed: 4 };
@@ -123,7 +131,8 @@ const ProjectPipeline: React.FC<ProjectPipelineProps> = ({ projects, loading }) 
           return (
             <div
               key={project.id}
-              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              onClick={() => handleProjectClick(project)}
+              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -206,6 +215,21 @@ const ProjectPipeline: React.FC<ProjectPipelineProps> = ({ projects, loading }) 
           <p className="text-sm">Projects will appear here as they're added</p>
         </div>
       )}
+
+      {/* Footer with navigation to clients */}
+      <div className="mt-6 pt-4 border-t border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            <span className="font-medium">{projects.length}</span> total projects
+          </div>
+          <button 
+            onClick={() => navigate('/clients')}
+            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
+            View All Clients →
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

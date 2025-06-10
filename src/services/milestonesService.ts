@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { milestoneCreateSchema, milestoneUpdateSchema } from '../validators/engagementSchemas';
+import { TeamsIntegrationService } from './teamsIntegrationService';
 
 export type MilestoneStatus = 'not_started' | 'in_progress' | 'complete';
 
@@ -142,7 +143,17 @@ export class MilestonesService {
       }
     }
 
-    return this.update(id, { status: newStatus });
+    const updatedMilestone = await this.update(id, { status: newStatus });
+
+    // Send Teams notification for milestone status changes (fire-and-forget)
+    TeamsIntegrationService.notifyMilestoneUpdate(
+      milestone.client_id,
+      milestone.project_id,
+      milestone.name,
+      newStatus
+    ).catch(console.error);
+
+    return updatedMilestone;
   }
 
   static async delete(id: string): Promise<void> {

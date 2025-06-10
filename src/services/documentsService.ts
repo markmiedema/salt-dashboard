@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { documentCreateSchema, documentUpdateSchema } from '../validators/engagementSchemas';
+import { TeamsIntegrationService } from './teamsIntegrationService';
 
 export interface Document {
   id: string;
@@ -77,6 +78,14 @@ export class DocumentsService {
       .select()
       .single();
     if (error) throw new Error(`Failed to create document: ${error.message}`);
+
+    // Send Teams notification for document upload (fire-and-forget)
+    TeamsIntegrationService.notifyDocumentUpload(
+      doc.client_id,
+      doc.project_id,
+      doc.title
+    ).catch(console.error);
+
     return data as Document;
   }
 

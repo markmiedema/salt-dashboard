@@ -112,11 +112,12 @@ export class InteractionsService {
       throw new Error(`Failed to create interaction: ${error.message}`);
     }
 
-    // Send Teams notification (fire-and-forget)
+    // Send Teams notification with proper navigation URL (fire-and-forget)
     TeamsIntegrationService.sendAdaptiveCard({
       title: 'New Client Interaction Logged',
-      text: interaction.summary,
-      url: undefined
+      text: `${interaction.type.charAt(0).toUpperCase() + interaction.type.slice(1)}: ${interaction.summary}`,
+      clientId: interaction.client_id,
+      projectId: interaction.project_id
     }).catch(console.error);
 
     return data as Interaction;

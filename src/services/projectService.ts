@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { Project } from '../types/database';
+import { TeamsIntegrationService } from './teamsIntegrationService';
 
 export interface ProjectStats {
   total: number;
@@ -93,6 +94,14 @@ export class ProjectService {
       throw new Error(`Failed to create project: ${error.message}`);
     }
 
+    // Send Teams notification for new project (fire-and-forget)
+    TeamsIntegrationService.notifyProjectUpdate(
+      project.client_id,
+      data.id,
+      project.name,
+      'created'
+    ).catch(console.error);
+
     return data;
   }
 
@@ -109,6 +118,23 @@ export class ProjectService {
 
     if (error) {
       throw new Error(`Failed to update project: ${error.message}`);
+    }
+
+    // Send Teams notification for project updates (fire-and-forget)
+    if (updates.status === 'completed') {
+      TeamsIntegrationService.notifyProjectUpdate(
+        data.client_id,
+        data.id,
+        data.name,
+        'completed'
+      ).catch(console.error);
+    } else if (updates.status || updates.name || updates.amount) {
+      TeamsIntegrationService.notifyProjectUpdate(
+        data.client_id,
+        data.id,
+        data.name,
+        'updated'
+      ).catch(console.error);
     }
 
     return data;

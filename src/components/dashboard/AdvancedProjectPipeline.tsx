@@ -1,10 +1,13 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Clock, CheckCircle, AlertCircle, Pause, AlertTriangle, Calendar } from 'lucide-react';
 import { useProjects, useProjectStats } from '../../hooks/useAdvancedData';
 import { ProjectService } from '../../services/projectService';
 import { Project } from '../../types/database';
+import { getClientProjectUrl } from '../../utils/navigation';
 
 const AdvancedProjectPipeline: React.FC = () => {
+  const navigate = useNavigate();
   const { projects, loading: projectsLoading } = useProjects();
   const { data: stats, loading: statsLoading } = useProjectStats();
 
@@ -84,6 +87,10 @@ const AdvancedProjectPipeline: React.FC = () => {
       case 'low':
         return 'text-green-600 bg-green-100';
     }
+  };
+
+  const handleProjectClick = (project: Project) => {
+    navigate(getClientProjectUrl(project.client_id, project.id));
   };
 
   // Sort projects by priority and due date
@@ -200,7 +207,11 @@ const AdvancedProjectPipeline: React.FC = () => {
               </div>
               <div className="space-y-1">
                 {overdueProjects.slice(0, 3).map((project) => (
-                  <div key={project.id} className="flex items-center justify-between text-sm">
+                  <div 
+                    key={project.id} 
+                    className="flex items-center justify-between text-sm cursor-pointer hover:bg-red-100 p-1 rounded"
+                    onClick={() => handleProjectClick(project)}
+                  >
                     <span className="text-red-800">{project.name}</span>
                     <span className="text-red-600">
                       {Math.abs(project.daysUntilDue!)} days overdue
@@ -221,7 +232,11 @@ const AdvancedProjectPipeline: React.FC = () => {
               </div>
               <div className="space-y-1">
                 {upcomingDeadlines.slice(0, 3).map((project) => (
-                  <div key={project.id} className="flex items-center justify-between text-sm">
+                  <div 
+                    key={project.id} 
+                    className="flex items-center justify-between text-sm cursor-pointer hover:bg-yellow-100 p-1 rounded"
+                    onClick={() => handleProjectClick(project)}
+                  >
                     <span className="text-yellow-800">{project.name}</span>
                     <span className="text-yellow-600">
                       {project.daysUntilDue === 0 ? 'Due today' : `${project.daysUntilDue} days`}
@@ -244,7 +259,8 @@ const AdvancedProjectPipeline: React.FC = () => {
           return (
             <div
               key={project.id}
-              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              onClick={() => handleProjectClick(project)}
+              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -344,8 +360,11 @@ const AdvancedProjectPipeline: React.FC = () => {
             <span className="font-medium">${stats.averageValue.toLocaleString()}</span> average
             project value
           </div>
-          <button className="text-blue-600 hover:text-blue-700 font-medium">
-            View All Projects →
+          <button 
+            onClick={() => navigate('/clients')}
+            className="text-blue-600 hover:text-blue-700 font-medium"
+          >
+            View All Clients →
           </button>
         </div>
       </div>
