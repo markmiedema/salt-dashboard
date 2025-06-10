@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Calculator, Menu, X, Users, BarChart3, FolderOpen, FileText } from 'lucide-react';
+import { Calculator, Menu, X, Users, BarChart3, FileText } from 'lucide-react';
 import { TeamsService } from '../../services/teamsService';
+import { getCurrentPageId } from '../../utils/navigation';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,7 +26,6 @@ const Header: React.FC = () => {
   const navigation = [
     { id: 'dashboard', name: 'Dashboard', icon: BarChart3, path: '/dashboard' },
     { id: 'clients', name: 'Clients', icon: Users, path: '/clients' },
-    { id: 'projects', name: 'Projects', icon: FolderOpen, path: '/projects' },
     { id: 'reports', name: 'Reports', icon: FileText, path: '/reports' }
   ];
 
@@ -34,13 +34,8 @@ const Header: React.FC = () => {
     setIsMenuOpen(false);
   };
 
-  const getCurrentPageId = () => {
-    const currentPath = location.pathname;
-    const currentNav = navigation.find((nav) => nav.path === currentPath);
-    return currentNav?.id || 'dashboard';
-  };
-
-  const currentPageId = getCurrentPageId();
+  // Updated to handle nested client routes
+  const currentPageId = getCurrentPageId(location.pathname);
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
