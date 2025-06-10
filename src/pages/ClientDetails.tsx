@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Routes, Route, Outlet } from 'react-router-dom';
+import { useParams, useNavigate, Outlet } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
   ArrowLeft,
@@ -17,19 +17,21 @@ import {
   CheckCircle,
   AlertCircle,
   TrendingUp,
-  FileText
+  FileText,
+  MessageSquare,
+  Paperclip
 } from 'lucide-react';
 import { useClients, useProjects } from '../hooks/useAdvancedData';
 import { ProjectService } from '../services/projectService';
 import { buildBreadcrumbsWithId, getClientProjectUrl } from '../utils/navigation';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import ProjectDetail from './ProjectDetail';
+import RetryButton from '../components/common/RetryButton';
 
 const ClientDetails: React.FC = () => {
-  const { clientId, projectId } = useParams<{ clientId: string; projectId?: string }>();
+  const { clientId } = useParams<{ clientId: string }>();
   const navigate = useNavigate();
-  const { clients, loading: clientsLoading } = useClients();
-  const { projects, loading: projectsLoading } = useProjects();
+  const { clients, loading: clientsLoading, error: clientsError, refetch: refetchClients } = useClients();
+  const { projects, loading: projectsLoading, error: projectsError, refetch: refetchProjects } = useProjects();
   
   const [client, setClient] = useState(null);
   const [clientProjects, setClientProjects] = useState([]);
@@ -52,6 +54,11 @@ const ClientDetails: React.FC = () => {
 
   const handleProjectClick = (projectId: string) => {
     navigate(getClientProjectUrl(clientId!, projectId));
+  };
+
+  const handleRetry = () => {
+    refetchClients();
+    refetchProjects();
   };
 
   const getStatusColor = (status: string) => {
@@ -112,17 +119,7 @@ const ClientDetails: React.FC = () => {
     };
   };
 
-  // If we're showing a specific project, render the project detail
-  if (projectId) {
-    return (
-      <Routes>
-        <Route path="projects/:projectId\" element={<ProjectDetail />} />
-      </Routes>
-    );
-  }
-
-  const stats = calculateClientStats();
-
+  // Loading state
   if (clientsLoading || projectsLoading) {
     return (
       <>
@@ -136,6 +133,38 @@ const ClientDetails: React.FC = () => {
     );
   }
 
+  // Error state
+  if (clientsError || projectsError) {
+    return (
+      <>
+        <Helmet>
+          <title>Error Loading Client - Tax Agency Dashboard</title>
+        </Helmet>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center max-w-md mx-auto p-6">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-8 h-8 text-red-600" />
+            </div>
+            <h1 className="text-xl font-bold text-gray-900 mb-2">Error Loading Client</h1>
+            <p className="text-gray-600 mb-6">
+              {clientsError || projectsError || 'There was an error loading the client details.'}
+            </p>
+            <div className="space-y-3">
+              <RetryButton onRetry={handleRetry} variant="primary" />
+              <button
+                onClick={handleBack}
+                className="block w-full text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Back to Clients
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Client not found
   if (!client) {
     return (
       <>
@@ -143,9 +172,14 @@ const ClientDetails: React.FC = () => {
           <title>Client Not Found - Tax Agency Dashboard</title>
         </Helmet>
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Client Not Found</h1>
-            <p className="text-gray-600 mb-6">The client you're looking for doesn't exist.</p>
+          <div className="text-center max-w-md mx-auto p-6">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <User className="w-8 h-8 text-gray-400" />
+            </div>
+            <h1 className="text-xl font-bold text-gray-900 mb-2">Client Not Found</h1>
+            <p className="text-gray-600 mb-6">
+              The client you're looking for doesn't exist or may have been removed.
+            </p>
             <button
               onClick={handleBack}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -158,7 +192,9 @@ const ClientDetails: React.FC = () => {
     );
   }
 
+  const stats = calculateClientStats();
   const EntityIcon = getEntityTypeIcon(client.entity_type);
+  const breadcrumbs = buildBreadcrumbsWithId(clientId!, client.name);
 
   return (
     <>
@@ -169,6 +205,27 @@ const ClientDetails: React.FC = () => {
 
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Breadcrumbs */}
+          <nav className="mb-4" aria-label="Breadcrumb">
+            <ol className="flex items-center space-x-2 text-sm text-gray-500">
+              {breadcrumbs.map((crumb, index) => (
+                <li key={index} className="flex items-center">
+                  {index > 0 && <span className="mx-2">/</span>}
+                  {crumb.href ? (
+                    <button
+                      onClick={() => navigate(crumb.href!)}
+                      className="hover:text-gray-700 transition-colors"
+                    >
+                      {crumb.label}
+                    </button>
+                  ) : (
+                    <span className="text-gray-900 font-medium">{crumb.label}</span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
+
           {/* Header */}
           <div className="mb-8">
             <button
@@ -204,9 +261,15 @@ const ClientDetails: React.FC = () => {
                   </div>
                 </div>
                 
-                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <MoreVertical className="w-5 h-5 text-gray-500" />
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button className="flex items-center space-x-2 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                    <Edit className="w-4 h-4" />
+                    <span>Edit</span>
+                  </button>
+                  <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <MoreVertical className="w-5 h-5 text-gray-500" />
+                  </button>
+                </div>
               </div>
 
               {/* Contact Information */}
@@ -216,7 +279,12 @@ const ClientDetails: React.FC = () => {
                     <Mail className="w-5 h-5 text-gray-400" />
                     <div>
                       <p className="text-sm text-gray-500">Email</p>
-                      <p className="text-gray-900">{client.email}</p>
+                      <a 
+                        href={`mailto:${client.email}`}
+                        className="text-gray-900 hover:text-blue-600 transition-colors"
+                      >
+                        {client.email}
+                      </a>
                     </div>
                   </div>
                 )}
@@ -225,7 +293,12 @@ const ClientDetails: React.FC = () => {
                     <Phone className="w-5 h-5 text-gray-400" />
                     <div>
                       <p className="text-sm text-gray-500">Phone</p>
-                      <p className="text-gray-900">{client.phone}</p>
+                      <a 
+                        href={`tel:${client.phone}`}
+                        className="text-gray-900 hover:text-blue-600 transition-colors"
+                      >
+                        {client.phone}
+                      </a>
                     </div>
                   </div>
                 )}
@@ -290,6 +363,26 @@ const ClientDetails: React.FC = () => {
                   }`}
                 >
                   Projects ({clientProjects.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab('revenue')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'revenue'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Revenue
+                </button>
+                <button
+                  onClick={() => setActiveTab('documents')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'documents'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Documents
                 </button>
                 <button
                   onClick={() => setActiveTab('activity')}
@@ -517,6 +610,62 @@ const ClientDetails: React.FC = () => {
             </div>
           )}
 
+          {activeTab === 'revenue' && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">Revenue Overview</h3>
+                <button className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                  <Plus className="w-4 h-4" />
+                  <span>Add Revenue Entry</span>
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="text-center p-6 bg-emerald-50 rounded-lg">
+                  <DollarSign className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-emerald-600">${stats.totalValue.toLocaleString()}</div>
+                  <div className="text-sm text-emerald-600">Total Revenue</div>
+                </div>
+                <div className="text-center p-6 bg-blue-50 rounded-lg">
+                  <TrendingUp className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-blue-600">
+                    ${stats.totalProjects > 0 ? Math.round(stats.totalValue / stats.totalProjects).toLocaleString() : '0'}
+                  </div>
+                  <div className="text-sm text-blue-600">Avg per Project</div>
+                </div>
+                <div className="text-center p-6 bg-purple-50 rounded-lg">
+                  <FolderOpen className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-purple-600">{stats.totalProjects}</div>
+                  <div className="text-sm text-purple-600">Total Projects</div>
+                </div>
+              </div>
+
+              <div className="text-center py-12 text-gray-500">
+                <DollarSign className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p>Revenue tracking coming soon</p>
+                <p className="text-sm">Detailed revenue analytics will be available here</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'documents' && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">Documents</h3>
+                <button className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                  <Plus className="w-4 h-4" />
+                  <span>Upload Document</span>
+                </button>
+              </div>
+              
+              <div className="text-center py-12 text-gray-500">
+                <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p>Document management coming soon</p>
+                <p className="text-sm">Client documents will be organized and accessible here</p>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'activity' && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">Recent Activity</h3>
@@ -550,7 +699,7 @@ const ClientDetails: React.FC = () => {
                 
                 {clientProjects.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                     <p>No recent activity</p>
                     <p className="text-sm">Activity will appear here as projects are created and updated</p>
                   </div>
@@ -559,7 +708,7 @@ const ClientDetails: React.FC = () => {
             </div>
           )}
 
-          {/* Nested Routes Outlet */}
+          {/* Nested Routes Outlet for project details */}
           <Outlet />
         </div>
       </div>
